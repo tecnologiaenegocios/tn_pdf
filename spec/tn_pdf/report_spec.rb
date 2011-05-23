@@ -1,8 +1,8 @@
 require 'spec_helper'
 
 module TnPDF
-  const_set("PageSection", EmptyClass)
-  const_set("Table", EmptyClass)
+  const_set("PageSection", EmptyClass) unless const_defined?("PageSection")
+  const_set("Table", EmptyClass) unless const_defined?("Table")
 
   describe Report do
 
