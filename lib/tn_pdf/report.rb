@@ -1,25 +1,14 @@
 module TnPDF
   class Report
+    attr_reader :page_header, :page_footer, :table, :record_collection
 
     def initialize
       @page_header = PageSection.new
       @page_footer = PageSection.new
       @table       = Table.new
-      @table.columns = []
       @record_collection = Array.new
     end
 
-    def page_header
-      @page_header.dup
-    end
-
-    def page_footer
-      @page_footer.dup
-    end
-
-    def table
-      @table.dup
-    end
     # Yeah, kinda unDRY. But the metaprogramming
     # counterpart's got very unreadable, so I chose
     # to keep the long version.
@@ -53,10 +42,6 @@ module TnPDF
         raise ArgumentError, "collection should be an Array!"
       end
       @record_collection = @table.collection = collection
-    end
-
-    def record_collection
-      @record_collection.dup
     end
 
     def table_columns
