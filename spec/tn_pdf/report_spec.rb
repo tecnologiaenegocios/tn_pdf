@@ -1,6 +1,9 @@
 require 'spec_helper'
 
 module TnPDF
+  const_set("PageSection", EmptyClass)
+  const_set("Table", EmptyClass)
+
   describe Report do
 
     describe "#page_header and #page_footer" do
