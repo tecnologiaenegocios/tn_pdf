@@ -47,21 +47,5 @@ module TnPDF
     def table_columns
       @table.columns || Array.new
     end
-
-    private
-
-    def page_header=(page_header)
-      unless page_header.kind_of? PageSection
-        raise ArgumentError, "page_header should be a PageSection!"
-      end
-      @page_header = page_header
-    end
-
-    def page_footer=(page_footer)
-      unless page_footer.kind_of? PageSection
-        raise ArgumentError, "page_footer should be a PageSection!"
-      end
-      @page_footer = page_footer
-    end
   end
 end
