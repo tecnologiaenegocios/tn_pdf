@@ -5,6 +5,7 @@ gem 'activesupport'
 
 group :test, :development do
   gem 'pry'
+  gem 'rcov'
 end
 
 group :test do
