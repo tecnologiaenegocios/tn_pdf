@@ -68,8 +68,8 @@ module TnPDF
     end
 
     describe "#table_columns" do
-      it "is a kind of hash" do
-        subject.table_columns.should be_kind_of Hash
+      it "is a kind of array" do
+        subject.table_columns.should be_kind_of Array
       end
     end
 
@@ -77,17 +77,23 @@ module TnPDF
       it "is a proxy to Table#add_column" do
         subject.table.should_receive(:add_column)
 
-        column = { 'String' => :to_s }
+        column = [ [ 'String' , :to_s ] ]
         subject.table_columns = column
       end
 
       it "works with multiple columns" do
         subject.table.should_receive(:add_column).exactly(3).times
 
-        columns = { 'String' => :to_s,
-                    'Object id' => :object_id,
-                    'Name'   => :name }
+        columns = [ [ 'String' => :to_s] ,
+                    [ 'Object id' => :object_id] ,
+                    [ 'Name'   => :name] ]
         subject.table_columns = columns
+      end
+    end
+
+    describe "#document" do
+      it "returns the Prawn::Document associated with the report" do
+        subject.document.should be_kind_of Prawn::Document
       end
     end
   end

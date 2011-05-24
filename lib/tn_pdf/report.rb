@@ -44,14 +44,23 @@ module TnPDF
     end
 
     def table_columns
-      table.columns_hash || Hash.new
+      table.columns || Array.new
     end
 
     def table_columns=(columns)
-      raise ArgumentError unless columns.kind_of? Hash
-      columns.each do |header, function|
-        table.add_column [header, function]
+      raise ArgumentError unless columns.kind_of? Array
+      columns.each do |column|
+        table.add_column column
       end
+    end
+
+    def render_to(filename)
+      table.render_on(document)
+      document.render_file filename
+    end
+
+    def document
+      @document ||= Prawn::Document.new
     end
 
     def table
