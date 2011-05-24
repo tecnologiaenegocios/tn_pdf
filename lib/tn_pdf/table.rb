@@ -4,8 +4,12 @@ require 'prawn'
 module TnPDF
   class Table
 
-    def columns
-      @columns ||= Array.new
+    def columns_hash
+      columns_hash = ActiveSupport::OrderedHash.new
+      columns.inject(columns_hash) do |hash, column|
+        hash[column.header] = column.to_proc
+        hash
+      end
     end
 
     def columns_headers
@@ -36,8 +40,13 @@ module TnPDF
       end
     end
 
-    def to_prawn(document)
-      document.make_table([columns_headers]+rows)
+    def render_on(document)
+      document.table([columns_headers]+rows)
+    end
+
+    def columns
+      @columns ||= []
     end
   end
+
 end

@@ -6,9 +6,17 @@ module TnPDF
   end
 
   describe Table do
-    describe "#columns" do
-      it "is a kind of Array" do
-        subject.columns.should be_kind_of(Array)
+    describe "#columns_hash" do
+      it "is a kind of Hash" do
+        subject.columns_hash.should be_kind_of(Hash)
+      end
+
+      it "is ordered" do
+        subject.add_column ["A", :A]
+        subject.add_column ["B", :B]
+        subject.add_column ["C", :C]
+
+        subject.columns_hash.keys.should == %w[A B C]
       end
     end
 
@@ -37,7 +45,7 @@ module TnPDF
     describe "#add_column" do
       let(:valid_column) { column = ["String", :to_s] }
 
-      it "adds a supplied column to the columns array" do
+      it "adds a supplied column to the columns hash" do
         adding_valid_column = Proc.new do
           subject.add_column(valid_column)
         end
@@ -75,14 +83,14 @@ module TnPDF
       end
     end
 
-    describe "#to_prawn" do
+    describe "#render_on" do
       let(:document) do
         document = mock("Prawn::Document")
       end
 
       it "instantiates a Prawn::Table instance" do
-        document.should_receive(:make_table)
-        subject.to_prawn(document)
+        document.should_receive(:table)
+        subject.render_on(document)
       end
     end
   end

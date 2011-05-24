@@ -5,7 +5,6 @@ module TnPDF
     def initialize
       @page_header = PageSection.new
       @page_footer = PageSection.new
-      @table       = Table.new
       @record_collection = Array.new
     end
 
@@ -41,11 +40,22 @@ module TnPDF
       unless collection.kind_of? Array
         raise ArgumentError, "collection should be an Array!"
       end
-      @record_collection = @table.collection = collection
+      @record_collection = table.collection = collection
     end
 
     def table_columns
-      @table.columns || Array.new
+      table.columns_hash || Hash.new
+    end
+
+    def table_columns=(columns)
+      raise ArgumentError unless columns.kind_of? Hash
+      columns.each do |header, function|
+        table.add_column [header, function]
+      end
+    end
+
+    def table
+      @table ||= Table.new
     end
   end
 end
