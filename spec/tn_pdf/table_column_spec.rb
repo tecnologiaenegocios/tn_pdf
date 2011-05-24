@@ -45,28 +45,18 @@ module TnPDF
         end
       end
 
-      describe "#collection" do
-        it "accepts only arrays" do
+      describe "#values_for" do
+        it "maps received values to the underlying proc" do
           column = Table::Column.new(["String", :to_s])
-          setting_as_array = Proc.new do
-            column.collection = [1,2,3]
-          end
-
-          setting_as_non_array = Proc.new do
-            column.collection = :not_an_array
-          end
-
-          setting_as_array.should change(column, :collection)
-          setting_as_non_array.should raise_error
+          numbers = (1..3).to_a
+          column.values_for(numbers).should == %w[1 2 3]
         end
       end
 
-      describe "#values" do
-        it "maps #collection values to the underlying proc" do
+      describe "#value_for" do
+        it "maps received object to the underlying proc" do
           column = Table::Column.new(["String", :to_s])
-          numbers = (1..3).to_a
-          column.collection = numbers
-          column.values.should == %w[1 2 3]
+          column.value_for(25).should == "25"
         end
       end
     end

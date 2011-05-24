@@ -37,10 +37,6 @@ module TnPDF
     describe "#add_column" do
       let(:valid_column) { column = ["String", :to_s] }
 
-      before do
-        Table::Column.stub(:new)
-      end
-
       it "adds a supplied column to the columns array" do
         adding_valid_column = Proc.new do
           subject.add_column(valid_column)
@@ -48,6 +44,46 @@ module TnPDF
         adding_valid_column.should change(subject.columns, :count).by(1)
       end
 
+      it "should the argument be a column, it adds directly" do
+        column = Table::Column.new [ "String", :to_s ]
+        subject.add_column(column)
+        subject.columns.should include(column)
+      end
+    end
+
+    describe "#columns_headers" do
+      it "returns the columns headers" do
+        subject.add_column ["String", :to_s]
+        subject.add_column ["Integer", :to_i]
+        subject.add_column ["Mean", :mean]
+
+        subject.columns_headers.should == %w[String Integer Mean]
+      end
+    end
+
+    describe "#rows" do
+      it "returns the values of the objects for each column" do
+        subject = Table.new # Just to be explicit
+        subject.add_column( ["String", :to_s] )
+        subject.add_column( ["Integer", :to_i] )
+        subject.add_column( ["Doubled", Proc.new { |x| x*2 } ] )
+
+        subject.collection = [1, 2, 3]
+        subject.rows.should == [ ["1", 1, 2],
+                                 ["2", 2, 4],
+                                 ["3", 3, 6] ]
+      end
+    end
+
+    describe "#to_prawn" do
+      let(:document) do
+        document = mock("Prawn::Document")
+      end
+
+      it "instantiates a Prawn::Table instance" do
+        document.should_receive(:make_table)
+        subject.to_prawn(document)
+      end
     end
   end
 end
