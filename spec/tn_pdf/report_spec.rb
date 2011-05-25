@@ -96,5 +96,20 @@ module TnPDF
         subject.document.should be_kind_of Prawn::Document
       end
     end
+
+    it "has all the properties defined on Report" do
+      Report.properties_names do |property|
+        subject.should respond_to(property)
+        subject.should respond_to(:"#{property}=")
+      end
+    end
+
+    specify "passing a hash of options on initialization works" do
+      properties = { :page_orientation => :portrait,
+                     :left_margin => 5.cm }
+      subject = Report.new(properties)
+      subject.page_orientation.should == :portrait
+      subject.left_margin.should == 5.cm
+    end
   end
 end
