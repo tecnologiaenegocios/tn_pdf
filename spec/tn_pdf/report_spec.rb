@@ -98,7 +98,7 @@ module TnPDF
     end
 
     it "has all the properties defined on Report" do
-      Report.properties_names do |property|
+      Configuration.properties_names do |property|
         subject.should respond_to(property)
         subject.should respond_to(:"#{property}=")
       end

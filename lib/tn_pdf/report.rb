@@ -1,7 +1,7 @@
 module TnPDF
   class Report
     attr_reader :page_header, :page_footer, :table, :record_collection
-    attr_accessor *Report.properties_names
+    attr_accessor *Configuration.properties_names
 
     def initialize(properties = {})
       @page_header = PageSection.new
@@ -89,17 +89,18 @@ module TnPDF
     # Configurable properties
 
     def properties
-      Report.properties_names.inject({}) do |properties_hash, property|
-        properties_hash[property] = send(property)
-        properties_hash
-      end
+      @properties ||=
+        Configuration.properties_names.inject({}) do |properties_hash, property|
+          properties_hash[property] = send(property)
+          properties_hash
+        end
     end
 
     private
 
     def initialize_properties(properties)
-      Report.properties_names.each do |property|
-        properties[property] ||= Report.defaults[property]
+      Configuration.properties_names.each do |property|
+        properties[property] ||= Configuration[property]
         send(:"#{property}=", properties[property])
       end
     end
