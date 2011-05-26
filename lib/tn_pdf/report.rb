@@ -56,8 +56,25 @@ module TnPDF
       end
     end
 
-    def render_to(filename)
-      table.render_on(document)
+    def render(filename)
+      document_width = document.bounds.width
+      page_header_position = [0, document.cursor]
+      page_footer_position = [0, 50]
+
+      document.repeat :all, :dynamic => true do
+        page_header.render(document, page_header_position)
+        document.stroke_horizontal_rule
+        document.move_down 100
+      end
+
+      document.bounding_box([2.cm, 20.cm], :width => 20.cm) do
+        table.render(document)
+      end
+
+      document.repeat :all do
+        page_footer.render(document, page_footer_position)
+      end
+
       document.render_file filename
     end
 

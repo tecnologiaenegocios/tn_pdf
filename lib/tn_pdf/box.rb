@@ -9,8 +9,11 @@ module TnPDF
         parse_options(options)
       end
 
-      def render(document, width, pos)
-        document.bounding_box(pos, :width => width) do
+      def render(document, pos, width, height=nil)
+        options_hash = { :width => width }
+        options_hash[:height] = height unless height.nil?
+
+        document.bounding_box(pos, options_hash) do
           if has_image?
             image_args = [image_path]
             image_args << image_options unless image_options.empty?

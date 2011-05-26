@@ -40,7 +40,7 @@ module TnPDF
       end
     end
 
-    def render_on(document)
+    def render(document)
       document.table([columns_headers]+rows)
     end
 

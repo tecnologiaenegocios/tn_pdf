@@ -83,14 +83,14 @@ module TnPDF
       end
     end
 
-    describe "#render_on" do
+    describe "#render" do
       let(:document) do
         document = mock("Prawn::Document")
       end
 
       it "instantiates a Prawn::Table instance" do
         document.should_receive(:table)
-        subject.render_on(document)
+        subject.render(document)
       end
     end
   end
