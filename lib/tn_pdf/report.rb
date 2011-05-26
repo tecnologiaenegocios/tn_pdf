@@ -10,32 +10,35 @@ module TnPDF
       initialize_properties(properties)
     end
 
-    # Yeah, kinda unDRY. But the metaprogramming
-    # counterpart's got very unreadable, so I chose
-    # to keep the long version.
+    class << self
+      private
 
-    def page_header_left=(page_header_left)
-      @page_header.left = page_header_left
+      def forward_property(property)
+        property = property.to_s
+
+        # Regexp match example: page_footer_height
+        # the regex catches page_footer as "object",
+        # and height as "the method_name".
+        property.scan(/^(.*)_([^_]*)$/) do |object, method_name|
+          class_eval <<-STRING
+            def #{property}
+              #{object}.#{method_name}
+            end
+
+            def #{property}=(value)
+              #{object}.#{method_name} = value
+            end
+          STRING
+        end
+      end
+
     end
 
-    def page_footer_left=(page_footer_left)
-      @page_footer.left = page_footer_left
-    end
+    properties_to_forward = Configuration.header_properties_names +
+                              Configuration.footer_properties_names
 
-    def page_header_right=(page_header_right)
-      @page_header.right = page_header_right
-    end
-
-    def page_footer_right=(page_footer_right)
-      @page_footer.right = page_footer_right
-    end
-
-    def page_header_center=(page_header_center)
-      @page_header.center = page_header_center
-    end
-
-    def page_footer_center=(page_footer_center)
-      @page_footer.center = page_footer_center
+    properties_to_forward.each do |property|
+      forward_property(property)
     end
 
     def record_collection=(collection)
@@ -59,15 +62,14 @@ module TnPDF
     def render(filename)
       document_width = document.bounds.width
       page_header_position = [0, document.cursor]
-      page_footer_position = [0, 50]
+      page_footer_position = [0, Configuration[:page_footer_height]]
 
-      document.repeat :all, :dynamic => true do
+      document.repeat :all do
         page_header.render(document, page_header_position)
         document.stroke_horizontal_rule
-        document.move_down 100
       end
 
-      document.bounding_box([2.cm, 20.cm], :width => 20.cm) do
+      document.bounding_box([2.cm, 20.cm], :width => 20.cm, :height => 10.cm) do
         table.render(document)
       end
 
@@ -104,5 +106,7 @@ module TnPDF
         send(:"#{property}=", properties[property])
       end
     end
+
+
   end
 end

@@ -47,7 +47,7 @@ module TnPDF
 
       def header_defaults
         {
-          :height =>  4.cm,
+          :height =>  2.cm,
           :left   =>  { :text => "Teste" },
           :center =>  { :text => "de" },
           :right  =>  { :text => "cabeçalho" }
