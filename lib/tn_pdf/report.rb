@@ -13,20 +13,20 @@ module TnPDF
     class << self
       private
 
-      def forward_property(property)
+      def forward_property(property, object_name)
         property = property.to_s
 
         # Regexp match example: page_footer_height
-        # the regex catches page_footer as "object",
-        # and height as "the method_name".
-        property.scan(/^(.*)_([^_]*)$/) do |object, method_name|
+        # the regexp matches 'height' as the 'method_name'
+
+        property.scan(/^#{object_name}_([^\s]*)$/) do |method_name|
           class_eval <<-STRING
             def #{property}
-              #{object}.#{method_name}
+            #{object_name}.#{method_name}
             end
 
             def #{property}=(value)
-              #{object}.#{method_name} = value
+            #{object_name}.#{method_name} = value
             end
           STRING
         end
@@ -34,11 +34,12 @@ module TnPDF
 
     end
 
-    properties_to_forward = Configuration.header_properties_names +
-                              Configuration.footer_properties_names
+    Configuration.header_properties_names.each do |property|
+      forward_property(property, "page_header")
+    end
 
-    properties_to_forward.each do |property|
-      forward_property(property)
+    Configuration.footer_properties_names.each do |property|
+      forward_property(property, "page_footer")
     end
 
     def record_collection=(collection)
