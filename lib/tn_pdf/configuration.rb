@@ -23,17 +23,17 @@ module TnPDF
       end
 
       def header_properties_names
-        header_defaults.keys.map { |k| "page_header_#{k}".to_sym }
+        header_defaults.keys
       end
 
       def footer_properties_names
-        footer_defaults.keys.map { |k| "page_footer_#{k}".to_sym }
+        footer_defaults.keys
       end
 
       def properties_names
-        report_properties_names +
-          header_properties_names +
-          footer_properties_names
+        report_properties_names.map { |p| "report_#{p}" }  +
+          header_properties_names.map { |p| "page_header_#{p}" } +
+          footer_properties_names.map { |p| "page_footer_#{p}" }
       end
 
       private

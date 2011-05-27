@@ -13,33 +13,26 @@ module TnPDF
     class << self
       private
 
-      def forward_property(property, object_name)
-        property = property.to_s
+      def forward_property(object_name, property)
+        class_eval <<-STRING
+          def #{object_name}_#{property}
+          #{object_name}.#{property}
+          end
 
-        # Regexp match example: page_footer_height
-        # the regexp matches 'height' as the 'method_name'
-
-        property.scan(/^#{object_name}_([^\s]*)$/) do |method_name|
-          class_eval <<-STRING
-            def #{property}
-            #{object_name}.#{method_name}
-            end
-
-            def #{property}=(value)
-            #{object_name}.#{method_name} = value
-            end
-          STRING
-        end
+          def #{object_name}_#{property}=(value)
+          #{object_name}.#{property} = value
+          end
+        STRING
       end
 
     end
 
     Configuration.header_properties_names.each do |property|
-      forward_property(property, "page_header")
+      forward_property("page_header", property)
     end
 
     Configuration.footer_properties_names.each do |property|
-      forward_property(property, "page_footer")
+      forward_property("page_footer", property)
     end
 
     def record_collection=(collection)
@@ -70,10 +63,10 @@ module TnPDF
         document.stroke_horizontal_rule
       end
 
+      table_height = page_body_height
       document.bounding_box([0, page_body_height+page_footer.total_height],
-                            :width  => document.bounds.width,
-                            :height => page_body_height) do
-        table.render(document)
+                            :width  => document.bounds.width) do
+        table.render(document, table_height)
       end
 
       document.repeat :all do
@@ -100,22 +93,21 @@ module TnPDF
     # Configurable properties
 
     def properties
-      @properties ||=
-        Configuration.properties_names.inject({}) do |properties_hash, property|
-          properties_hash[property] = send(property)
-          properties_hash
-        end
+      Configuration.report_properties_names.inject({}) do |properties_hash, property|
+        properties_hash[property] = send(property)
+        properties_hash
+      end
     end
 
     private
 
     def initialize_properties(properties)
       Configuration.properties_names.each do |property|
+        property = property.to_s.sub(/report_/, '').to_sym
         properties[property] ||= Configuration[property]
         send(:"#{property}=", properties[property])
       end
     end
-
 
   end
 end
