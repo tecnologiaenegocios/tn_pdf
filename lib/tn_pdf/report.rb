@@ -1,7 +1,7 @@
 module TnPDF
   class Report
     attr_reader :page_header, :page_footer, :table, :record_collection
-    attr_accessor *Configuration.properties_names
+    attr_accessor *Configuration.report_properties_names
 
     def initialize(properties = {})
       @page_header = PageSection.new
@@ -69,7 +69,9 @@ module TnPDF
         document.stroke_horizontal_rule
       end
 
-      document.bounding_box([2.cm, 20.cm], :width => 20.cm, :height => 10.cm) do
+      document.bounding_box([0, page_body_height+page_footer.total_height],
+                            :width  => document.bounds.width,
+                            :height => page_body_height) do
         table.render(document)
       end
 
@@ -78,6 +80,12 @@ module TnPDF
       end
 
       document.render_file filename
+    end
+
+    def page_body_height
+      height  = document.bounds.height
+      height -= page_header.total_height
+      height -= page_footer.total_height
     end
 
     def document
