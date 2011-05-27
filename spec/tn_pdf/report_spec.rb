@@ -105,10 +105,10 @@ module TnPDF
     end
 
     specify "passing a hash of options on initialization works" do
-      properties = { :page_orientation => :portrait,
+      properties = { :page_layout => :portrait,
                      :left_margin => 5.cm }
       subject = Report.new(properties)
-      subject.page_orientation.should == :portrait
+      subject.page_layout.should == :portrait
       subject.left_margin.should == 5.cm
     end
   end

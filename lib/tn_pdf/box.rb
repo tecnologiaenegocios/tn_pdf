@@ -41,10 +41,16 @@ module TnPDF
       def parse_options(options)
         options.to_options!
 
+        options[:align]  ||= :justify
+        options[:valign] ||= :center
+
         if options[:text]
           unless options[:text].kind_of? Hash
             options[:text] = { :text => options[:text] }
           end
+          options[:text][:align]  = options[:align]
+          options[:text][:valign] = options[:valign]
+
           @text = options[:text][:text]
           @text_options = options[:text].reject { |k,_| k == :text }
         end
@@ -53,6 +59,9 @@ module TnPDF
           unless options[:image].kind_of? Hash
             options[:image] = { :path => options[:image] }
           end
+          options[:image][:position] = options[:align]
+          options[:image][:vposition] = options[:valign]
+
           @image_path = options[:image][:path]
           @image_options = options[:image].reject { |k,_| k == :path }
         end

@@ -7,16 +7,19 @@ module TnPDF
 
     def left=(options)
       @left = options
+      options[:align] = :left
       @left_box = Box.new(options)
     end
 
     def center=(options)
       @center = options
+      options[:align] = :center
       @center_box = Box.new(options)
     end
 
     def right=(options)
       @right = options
+      options[:align] = :right
       @right_box = Box.new(options)
     end
 
