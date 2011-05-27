@@ -13,6 +13,9 @@ module TnPDF
           when /^page_footer_/
             property_key = property.sub('page_footer_','').to_sym
             footer_defaults[property_key]
+          when /^table_/
+            property_key = property.sub('table_','').to_sym
+            table_defaults[property_key]
           else
             report_defaults[property.to_sym]
         end
@@ -30,10 +33,15 @@ module TnPDF
         footer_defaults.keys
       end
 
+      def table_properties_names
+        table_defaults.keys
+      end
+
       def properties_names
         report_properties_names.map { |p| "report_#{p}" }  +
           header_properties_names.map { |p| "page_header_#{p}" } +
-          footer_properties_names.map { |p| "page_footer_#{p}" }
+          footer_properties_names.map { |p| "page_footer_#{p}" } +
+          table_properties_names.map { |p| "table_#{p}" }
       end
 
       private
@@ -69,6 +77,13 @@ module TnPDF
           :left   =>  { :text => "Teste" },
           :center =>  { :text => "de" },
           :right  =>  { :text => "rodapé" }
+        }
+      end
+
+      def table_defaults
+        {
+          :align   => :center,
+          :multipage_headers => :true,
         }
       end
     end

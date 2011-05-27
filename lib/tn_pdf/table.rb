@@ -3,6 +3,13 @@ require 'prawn'
 
 module TnPDF
   class Table
+    attr_accessor *Configuration.table_properties_names
+
+    def initialize
+      Configuration.table_properties_names.each do |property|
+        send("#{property}=", Configuration["table_#{property}"])
+      end
+    end
 
     def columns_hash
       columns_hash = ActiveSupport::OrderedHash.new
@@ -40,13 +47,34 @@ module TnPDF
       end
     end
 
-    def render(document)
-      document.table([columns_headers]+rows)
+    def render(document, max_height)
+      table = document.make_table([columns_headers]+rows,
+                                  :header => multipage_headers)
+      x_pos = x_pos_on(document, table.width)
+      document.bounding_box([x_pos, document.cursor], :width => table.width, :height => max_height) do
+        table.draw
+      end
     end
 
     def columns
       @columns ||= []
     end
+
+    private
+
+    def x_pos_on(document, table_width)
+      case align
+        when :left
+          0
+        when :center
+          (document.bounds.right - table_width)/2.0
+        when :right
+          document.bounds.right - table_width
+        else
+          0
+      end
+    end
+
   end
 
 end

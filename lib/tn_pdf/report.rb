@@ -35,6 +35,10 @@ module TnPDF
       forward_property("page_footer", property)
     end
 
+    Configuration.table_properties_names.each do |property|
+      forward_property("table", property)
+    end
+
     def record_collection=(collection)
       unless collection.kind_of? Array
         raise ArgumentError, "collection should be an Array!"
@@ -102,11 +106,22 @@ module TnPDF
     private
 
     def initialize_properties(properties)
-      Configuration.properties_names.each do |property|
-        property = property.to_s.sub(/report_/, '').to_sym
+      owned_properties  = Configuration.report_properties_names
+      owned_properties += Configuration.footer_properties_names.map do |p|
+        "page_footer_#{p}"
+      end
+      owned_properties += Configuration.header_properties_names.map do |p|
+        "page_header_#{p}"
+      end
+      owned_properties += Configuration.table_properties_names.map do |p|
+        "table_#{p}"
+      end
+
+      owned_properties.each do |property|
         properties[property] ||= Configuration[property]
         send(:"#{property}=", properties[property])
       end
+
     end
 
   end
