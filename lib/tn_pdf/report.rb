@@ -62,6 +62,9 @@ module TnPDF
       page_header_position = [0, document.cursor]
       page_footer_position = [0, Configuration[:page_footer_height]]
 
+      document.font(font)
+      document.font_size(font_size)
+
       document.repeat :all do
         page_header.render(document, page_header_position)
         document.stroke_horizontal_rule

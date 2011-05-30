@@ -20,11 +20,22 @@ module TnPDF
 
       def value_for(object)
         value = @proc.call(object)
-        string = sprintf(style[:format], value)
-        string.gsub!(".",style[:decimal]) if style[:decimal]
+        method = if value.respond_to?(:strftime)
+                   value.method(:strftime)
+                 elsif value.respond_to?(:sprintf)
+                   value.method(:sprintf)
+                 else
+                   method(:sprintf)
+                 end
+        string = method.arity == 1 ?
+                   method.call(style[:format]) :
+                   method.call(style[:format], value)
+
+        string.gsub!(".", style[:decimal]) if style[:decimal]
         return string
-       rescue
-         puts "WARNING: Bad format #{style[:format]} for value #{value}"
+      rescue TypeError
+        puts "WARNING: Bad format '#{style[:format]}' for value '#{value}'"
+        return value.to_s
       end
 
       private

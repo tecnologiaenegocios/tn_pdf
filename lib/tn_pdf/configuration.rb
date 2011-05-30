@@ -57,6 +57,8 @@ module TnPDF
           :right_margin => 1.cm,
           :top_margin => 0.cm,
           :bottom_margin => 0.cm,
+          :font => "Courier",
+          :font_size => 10,
         }
       end
 
@@ -96,11 +98,17 @@ module TnPDF
 
       def column_defaults
         {
-          :currency => { :format => "R$ %0.2f",
+          :currency => { :format => "%0.2f",
                          :align => :right,
                          :decimal => "," },
 
-          :percentage => { :format => "%0.3f",
+          :number   => { :format => "%d",
+                         :align => :right},
+
+          :date => { :format => "%d/%m/%Y",
+                     :align  => :center },
+
+          :float => { :format => "%0.3f",
                            :align => :right,
                            :decimal => "," },
 
