@@ -1,3 +1,5 @@
+require 'yaml'
+require 'pry'
 module TnPDF
 
   class Configuration
@@ -9,35 +11,35 @@ module TnPDF
         case property
           when /^page_header_/
             property_key = property.sub('page_header_','').to_sym
-            header_defaults[property_key]
+            header[property_key]
           when /^page_footer_/
             property_key = property.sub('page_footer_','').to_sym
-            footer_defaults[property_key]
+            footer[property_key]
           when /^table_/
             property_key = property.sub('table_','').to_sym
-            table_defaults[property_key]
+            table[property_key]
           when /^column_/
             property_key = property.sub('column_','').to_sym
-            column_defaults[property_key]
+            column[property_key]
           else
-            report_defaults[property.to_sym]
+            report[property.to_sym]
         end
       end
 
       def report_properties_names
-        report_defaults.keys
+        report.keys
       end
 
       def header_properties_names
-        header_defaults.keys
+        header.keys
       end
 
       def footer_properties_names
-        footer_defaults.keys
+        footer.keys
       end
 
       def table_properties_names
-        table_defaults.keys
+        table.keys
       end
 
       def properties_names
@@ -47,10 +49,18 @@ module TnPDF
           table_properties_names.map { |p| "table_#{p}" }
       end
 
+      def load_from(yaml_file)
+        configurations = YAML.load_file(yaml_file)
+        configurations.to_options!
+        configurations.each_key do |item|
+          self.send(item).merge! configurations[item].to_options!
+        end
+      end
+
       private
 
-      def report_defaults
-        {
+      def report
+        @report ||= {
           :page_size => "A4",
           :page_layout => :landscape,
           :left_margin => 1.cm,
@@ -62,31 +72,25 @@ module TnPDF
         }
       end
 
-      def header_defaults
-        {
+      def header
+        @header ||= {
           :height =>  1.cm,
           :top => 0.5.cm,
           :bottom => 0.2.cm,
-          :left   =>  { :text => "Teste" },
-          :center =>  { :text => "de" },
-          :right  =>  { :text => "cabeçalho" }
         }
       end
 
 
-      def footer_defaults
-        {
+      def footer
+        @footer ||= {
           :height =>  1.cm,
           :top => 0.2.cm,
           :bottom => 0.1.cm,
-          :left   =>  { :text => "Teste" },
-          :center =>  { :text => "de" },
-          :right  =>  { :text => "rodapé" }
         }
       end
 
-      def table_defaults
-        {
+      def table
+        @table ||= {
           :align => :center,
           :multipage_headers => true,
           :borders => false,
@@ -96,8 +100,8 @@ module TnPDF
         }
       end
 
-      def column_defaults
-        {
+      def column
+        @column ||= {
           :currency => { :format => "%0.2f",
                          :align => :right,
                          :decimal => "," },
