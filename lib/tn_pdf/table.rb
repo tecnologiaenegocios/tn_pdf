@@ -48,10 +48,21 @@ module TnPDF
     end
 
     def render(document, max_height)
-      table = document.make_table([columns_headers]+rows,
-                                  :header => multipage_headers)
+      table = document.make_table([columns_headers]+rows) do |table|
+        table.header = self.multipage_headers
+        table.cells.borders = [] unless self.borders
+        table.row_colors = [self.odd_row_color, self.even_row_color]
+        table.row(0).background_color = self.header_color
+
+        columns.each_with_index do |column, index|
+          style = column.style.reject { |k, v| [:format, :decimal].include? k }
+          table.columns(index).style(style)
+        end
+      end
       x_pos = x_pos_on(document, table.width)
-      document.bounding_box([x_pos, document.cursor], :width => table.width, :height => max_height) do
+      document.bounding_box([x_pos, document.cursor],
+                            :width => table.width,
+                            :height => max_height) do
         table.draw
       end
     end

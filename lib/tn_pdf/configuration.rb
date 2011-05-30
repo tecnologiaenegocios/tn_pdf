@@ -16,6 +16,9 @@ module TnPDF
           when /^table_/
             property_key = property.sub('table_','').to_sym
             table_defaults[property_key]
+          when /^column_/
+            property_key = property.sub('column_','').to_sym
+            column_defaults[property_key]
           else
             report_defaults[property.to_sym]
         end
@@ -82,8 +85,27 @@ module TnPDF
 
       def table_defaults
         {
-          :align   => :center,
-          :multipage_headers => :true,
+          :align => :center,
+          :multipage_headers => true,
+          :borders => false,
+          :header_color => "FF0000",
+          :odd_row_color => "00FF00",
+          :even_row_color => "0000FF",
+        }
+      end
+
+      def column_defaults
+        {
+          :currency => { :format => "R$ %0.2f",
+                         :align => :right,
+                         :decimal => "," },
+
+          :percentage => { :format => "%0.3f",
+                           :align => :right,
+                           :decimal => "," },
+
+          :text => { :format => "%s",
+                     :align => :left }
         }
       end
     end
