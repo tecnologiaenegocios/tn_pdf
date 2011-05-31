@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require "tn_pdf/version"
 
 Gem::Specification.new do |s|
-  s.name        = "TnPDF"
+  s.name        = "tn_pdf"
   s.version     = TnPDF::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Renato Riccieri Santos Zannon"]
