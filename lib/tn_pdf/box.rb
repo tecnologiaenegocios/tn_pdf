@@ -1,4 +1,3 @@
-require 'pry'
 module TnPDF
   class PageSection
 
