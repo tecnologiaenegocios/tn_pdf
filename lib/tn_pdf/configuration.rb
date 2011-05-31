@@ -6,47 +6,15 @@ module TnPDF
 
 
       def [](property)
-        property = property.to_s
-        value = case property
-          when /^page_header_/
-            property_key = property.sub('page_header_','').to_sym
-            header[property_key]
-          when /^page_footer_/
-            property_key = property.sub('page_footer_','').to_sym
-            footer[property_key]
-          when /^table_/
-            property_key = property.sub('table_','').to_sym
-            table[property_key]
-          when /^column_/
-            property_key = property.sub('column_','').to_sym
-            column[property_key]
-          else
-            report[property.to_sym]
-        end
+        (hash, key) = filter_property(property)
+        hash[key]
       end
 
       def []=(property, value)
-        property = property.to_s
-        hash = case property
-          when /^page_header_/
-            header
-          when /^page_footer_/
-            footer
-          when /^table_/
-            table
-          when /^column_/
-            column
-          else
-            report
-        end
-        match = value.match(/^(\d+\.?\d*)\.(cm|mm)/) rescue nil
-        if match
-          num = match[0][1].to_f
-          conversion = match[0][2].to_sym
-          value = num.send(conversion)
-        end
+        (hash, key) = filter_property(property)
+        value = perform_conversions(value)
 
-        hash.merge!( {property.to_sym => value} )
+        hash[key] = value
       end
 
       def report_properties_names
@@ -75,8 +43,9 @@ module TnPDF
       def load_from(yaml_file)
         configurations = YAML.load_file(yaml_file)
         configurations.to_options!
-        configurations.each_key do |item|
-          self.send(item).merge! configurations[item].to_options!
+        configurations.each do |item, value|
+          value = perform_conversions(value)
+          self.send(item).merge! value
         end
       end
 
@@ -150,6 +119,49 @@ module TnPDF
                      :align => :left }
         }
       end
+
+      def perform_conversions(value)
+        match = value.match(/^(\d+\.?\d*)(cm|mm)$/) rescue nil
+        if match
+          num = match[1].to_f
+          conversion = match[2].to_sym
+          num.send(conversion)
+        elsif value.kind_of? Hash
+          value.to_options!
+          value.inject({}) do |hash, (key, value)|
+            hash[key] = perform_conversions(value)
+            hash
+          end
+        elsif value.kind_of? Array
+          value.inject([]) do |array, value|
+            array << perform_conversions(value)
+            array
+          end
+        else
+          value
+        end
+      end
+
+      def filter_property(property)
+        property = property.to_s
+        case property
+          when /^page_header_/
+            property_key = property.sub('page_header_','').to_sym
+            [header,property_key]
+          when /^page_footer_/
+            property_key = property.sub('page_footer_','').to_sym
+            [footer,property_key]
+          when /^table_/
+            property_key = property.sub('table_','').to_sym
+            [table,property_key]
+          when /^column_/
+            property_key = property.sub('column_','').to_sym
+            [column,property_key]
+          else
+            [report,property.to_sym]
+        end
+      end
+
     end
   end
 end
