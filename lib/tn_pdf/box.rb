@@ -1,8 +1,9 @@
+require 'pry'
 module TnPDF
   class PageSection
 
     class Box
-      attr_reader :image_path, :image_options
+      attr_reader :image_file, :image_options
       attr_reader :text, :text_options
 
       def initialize(options)
@@ -15,7 +16,7 @@ module TnPDF
 
         document.bounding_box(pos, options_hash) do
           if has_image?
-            image_args = [image_path]
+            image_args = [image_file]
             image_args << image_options unless image_options.empty?
             document.image *image_args
           end
@@ -29,7 +30,7 @@ module TnPDF
       end
 
       def has_image?
-        !image_path.nil?
+        !image_file.nil?
       end
 
       def has_text?
@@ -57,13 +58,17 @@ module TnPDF
 
         if options[:image]
           unless options[:image].kind_of? Hash
-            options[:image] = { :path => options[:image] }
+            options[:image] = { :file => options[:image] }
           end
           options[:image][:position] = options[:align]
           options[:image][:vposition] = options[:valign]
 
-          @image_path = options[:image][:path]
-          @image_options = options[:image].reject { |k,_| k == :path }
+          path = Configuration[:images_path]
+          @image_file = options[:image][:file]
+          unless @image_file =~ /^#{path}/
+            @image_file = File.join(path, @image_file)
+          end
+          @image_options = options[:image].reject { |k,_| k == :file }
         end
       end
 

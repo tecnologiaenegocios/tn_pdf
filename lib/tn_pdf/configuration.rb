@@ -68,6 +68,7 @@ module TnPDF
           :bottom_margin => 0.cm,
           :font => "Courier",
           :font_size => 10,
+          :images_path => "./"
         }
       end
 
@@ -76,6 +77,9 @@ module TnPDF
           :height =>  1.cm,
           :top => 0.5.cm,
           :bottom => 0.2.cm,
+          :left => {},
+          :right => {},
+          :center => {}
         }
       end
 
@@ -85,6 +89,9 @@ module TnPDF
           :height =>  1.cm,
           :top => 0.2.cm,
           :bottom => 0.1.cm,
+          :left => {},
+          :right => {},
+          :center => {}
         }
       end
 
