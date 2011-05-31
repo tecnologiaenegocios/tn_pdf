@@ -27,9 +27,9 @@ module TnPDF
 
         it "accepts extra image options to prawn by passing hashes" do
           document = Prawn::Document.new
-          box = Box.new( :image => {:path => "image.jpg", :width => 1.cm } )
+          box = Box.new( :image => {:file => "./image.jpg", :width => 1.cm } )
 
-          document.should_receive(:image).with("image.jpg", hash_including(:width => 1.cm) )
+          document.should_receive(:image).with("./image.jpg", hash_including(:width => 1.cm) )
           box.render(document, [0,0], 100)
         end
       end

@@ -77,9 +77,9 @@ module TnPDF
         subject.add_column( ["Doubled", Proc.new { |x| x*2 } ] )
 
         subject.collection = [1, 2, 3]
-        subject.rows.should == [ ["1", 1, 2],
-                                 ["2", 2, 4],
-                                 ["3", 3, 6] ]
+        subject.rows.should == [ ["1", "1", "2"],
+                                 ["2", "2", "4"],
+                                 ["3", "3", "6"] ]
       end
     end
 
