@@ -25,6 +25,23 @@ module TnPDF
         end
       end
 
+      def []=(property, value)
+        property = property.to_s
+        hash = case property
+          when /^page_header_/
+            header
+          when /^page_footer_/
+            footer
+          when /^table_/
+            table
+          when /^column_/
+            column
+          else
+            report
+        end
+        hash[property.to_sym] = value
+      end
+
       def report_properties_names
         report.keys
       end
