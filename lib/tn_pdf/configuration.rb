@@ -7,7 +7,7 @@ module TnPDF
 
       def [](property)
         property = property.to_s
-        case property
+        value = case property
           when /^page_header_/
             property_key = property.sub('page_header_','').to_sym
             header[property_key]
@@ -39,7 +39,14 @@ module TnPDF
           else
             report
         end
-        hash[property.to_sym] = value
+        match = value.match(/^(\d+\.?\d*)\.(cm|mm)/) rescue nil
+        if match
+          num = match[0][1].to_f
+          conversion = match[0][2].to_sym
+          value = num.send(conversion)
+        end
+
+        hash.merge!( {property.to_sym => value} )
       end
 
       def report_properties_names
