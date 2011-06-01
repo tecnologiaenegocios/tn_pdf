@@ -71,10 +71,12 @@ module TnPDF
       end
 
       table_height = page_body_height
-      document.bounding_box([0, page_body_height+page_footer.total_height],
+
+      document.bounding_box([0, document.cursor],
                             :width  => document.bounds.width) do
-        Box.new(before_table).render(document, cursor, document.bounds.width)
+        document.text text_before_table
         table.render(document, table_height)
+        document.text text_after_table
       end
 
       document.repeat :all do

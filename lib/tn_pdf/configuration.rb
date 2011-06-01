@@ -62,8 +62,8 @@ module TnPDF
           :font => "Courier",
           :font_size => 10,
           :images_path => "./",
-          :before_table => {},
-          :after_table => {},
+          :text_before_table => "",
+          :text_after_table => "",
         }
       end
 
