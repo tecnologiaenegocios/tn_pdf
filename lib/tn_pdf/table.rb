@@ -48,7 +48,8 @@ module TnPDF
     end
 
     def render(document, max_height)
-      table = document.make_table([columns_headers]+rows) do |table|
+      table = document.make_table([columns_headers]+rows,
+                                  :width => document.bounds.width) do |table|
         table.header = self.multipage_headers
         table.cells.borders = [] unless self.borders
         table.row_colors = [self.odd_row_color, self.even_row_color]
