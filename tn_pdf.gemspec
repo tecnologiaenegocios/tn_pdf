@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project = "tn_pdf"
 
   s.add_dependency('prawn', '~> 0.11.1')
-  s.add_dependency('activesupport')
+  s.add_dependency('activesupport', '~> 2.3.5')
 
   s.add_development_dependency('rspec', '~> 2.6.0')
   s.add_development_dependency('autotest')

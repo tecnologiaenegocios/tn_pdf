@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     tn_pdf (0.0.2)
-      activesupport
+      activesupport (~> 2.3.5)
       prawn (~> 0.11.1)
 
 GEM
@@ -10,7 +10,7 @@ GEM
   specs:
     Ascii85 (1.0.1)
     ZenTest (4.5.0)
-    activesupport (2.3.5)
+    activesupport (2.3.11)
     autotest (4.4.6)
       ZenTest (>= 4.4.1)
     coderay (0.9.8)
@@ -32,7 +32,7 @@ GEM
       rspec-core (~> 2.6.0)
       rspec-expectations (~> 2.6.0)
       rspec-mocks (~> 2.6.0)
-    rspec-core (2.6.1)
+    rspec-core (2.6.3)
     rspec-expectations (2.6.0)
       diff-lcs (~> 1.1.2)
     rspec-mocks (2.6.0)
