@@ -52,12 +52,18 @@ module TnPDF
         table.header = self.multipage_headers
         table.cells.borders = [] unless self.borders
         table.row_colors = [self.odd_row_color, self.even_row_color]
-        table.row(0).background_color = self.header_color
 
         columns.each_with_index do |column, index|
           style = column.style.reject { |k, v| [:format, :decimal].include? k }
           table.columns(index).style(style)
         end
+
+        header_row = table.row(0)
+        header_row.background_color = self.header_color
+        header_row.font_style = self.header_font_style
+        header_row.size = self.header_font_size
+        header_row.font = self.header_font
+        header_row.align = :center
       end
       x_pos = x_pos_on(document, table.width)
       document.bounding_box([x_pos, document.cursor],
