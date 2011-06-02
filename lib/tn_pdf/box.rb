@@ -23,7 +23,7 @@ module TnPDF
           if has_text?
             text_args = [text]
             text_args << text_options unless text_options.empty?
-            document.font(text_options[:font] || Configuration[:font], text_options[:font_options]) do
+            document.font(text_options[:font], text_options[:font_options]) do
               document.text *text_args
             end
           end
@@ -53,7 +53,7 @@ module TnPDF
           options[:text][:align]  = options[:align]
           options[:text][:valign] = options[:valign]
 
-          options[:text][:font] = options[:font]
+          options[:text][:font] ||= Configuration[:font]
           options[:text][:font_options] = {}
           options[:text][:font_options][:size] =
             options[:text][:font_size] if options[:text][:font_size]

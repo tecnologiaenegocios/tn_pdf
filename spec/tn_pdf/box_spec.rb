@@ -19,9 +19,9 @@ module TnPDF
 
         it "accepts extra text options to prawn by passing hashes" do
           document = Prawn::Document.new
-          box = Box.new( :text => {:text => "text", :font => "DejaVu Sans"} )
+          box = Box.new( :text => {:text => "text", :font => "Courier"} )
 
-          document.should_receive(:text).with("text", hash_including(:font => "DejaVu Sans") )
+          document.should_receive(:text).with("text", hash_including(:font => "Courier") )
           box.render(document, [0,0], 100)
         end
 
