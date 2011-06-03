@@ -39,7 +39,7 @@ GEM
     ruby_parser (2.0.6)
       sexp_processor (~> 3.0)
     sexp_processor (3.0.5)
-    slop (1.6.0)
+    slop (1.6.1)
     ttfunk (1.0.1)
 
 PLATFORMS
