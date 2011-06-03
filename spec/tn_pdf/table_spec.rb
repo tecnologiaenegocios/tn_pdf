@@ -5,7 +5,10 @@ module TnPDF
     const_set("Column",EmptyClass) unless const_defined?("Column")
   end
 
+
   describe Table do
+    let(:subject)  { Table.new(stub('Document')) }
+
     describe "#columns_hash" do
       it "is a kind of Hash" do
         subject.columns_hash.should be_kind_of(Hash)
@@ -71,7 +74,7 @@ module TnPDF
 
     describe "#rows" do
       it "returns the values of the objects for each column" do
-        subject = Table.new # Just to be explicit
+        subject = Table.new(stub('Document')) # Just to be explicit
         subject.add_column( ["String", :to_s] )
         subject.add_column( ["Integer", :to_i] )
         subject.add_column( ["Doubled", Proc.new { |x| x*2 } ] )
@@ -84,17 +87,18 @@ module TnPDF
     end
 
     describe "#render" do
-      let(:document) do
-         mock("Prawn::Document").as_null_object
-      end
-
       let(:table) do
         mock("Prawn::Table").as_null_object
       end
 
+      let(:document) do
+        mock("Prawn::Document").as_null_object
+      end
+
       it "instantiates a Prawn::Table instance" do
         document.should_receive(:make_table).and_return(table)
-        subject.render(document, 0)
+        subject = Table.new(document)
+        subject.render(0)
       end
     end
   end

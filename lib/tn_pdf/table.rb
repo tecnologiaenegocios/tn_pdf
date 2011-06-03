@@ -5,10 +5,11 @@ module TnPDF
   class Table
     attr_accessor *Configuration.table_properties_names
 
-    def initialize
+    def initialize(document)
       Configuration.table_properties_names.each do |property|
         send("#{property}=", Configuration["table_#{property}"])
       end
+      @document = document
     end
 
     def columns_hash
@@ -47,9 +48,41 @@ module TnPDF
       end
     end
 
-    def render(document, max_height)
-      table = document.make_table([columns_headers]+rows,
-                                  :width => document.bounds.width) do |table|
+    def render(max_height)
+      x_pos = x_pos_on(document, prawn_table.width)
+      document.bounding_box([x_pos, document.cursor],
+                            :width => prawn_table.width,
+                            :height => max_height) do
+        prawn_table.draw
+      end
+    end
+
+    def columns
+      @columns ||= []
+    end
+
+    private
+
+    def x_pos_on(document, table_width)
+      case align
+      when :left
+        0
+      when :center
+        (document.bounds.right - table_width)/2.0
+      when :right
+        document.bounds.right - table_width
+      else
+        0
+      end
+    end
+
+    def document
+      @document
+    end
+
+    def prawn_table
+      @prawn_table ||= document.make_table([columns_headers]+rows,
+                          :width => document.bounds.width) do |table|
         table.header = self.multipage_headers
         table.cells.borders = [] unless self.borders
         table.row_colors = [self.odd_row_color, self.even_row_color]
@@ -65,31 +98,6 @@ module TnPDF
         header_row.size = self.header_font_size
         header_row.font = self.header_font
         header_row.align = :center
-      end
-      x_pos = x_pos_on(document, table.width)
-      document.bounding_box([x_pos, document.cursor],
-                            :width => table.width,
-                            :height => max_height) do
-        table.draw
-      end
-    end
-
-    def columns
-      @columns ||= []
-    end
-
-    private
-
-    def x_pos_on(document, table_width)
-      case align
-        when :left
-          0
-        when :center
-          (document.bounds.right - table_width)/2.0
-        when :right
-          document.bounds.right - table_width
-        else
-          0
       end
     end
 

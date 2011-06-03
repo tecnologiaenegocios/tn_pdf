@@ -75,7 +75,7 @@ module TnPDF
       document.bounding_box([0, document.cursor],
                             :width  => document.bounds.width) do
         document.text text_before_table
-        table.render(document, table_height)
+        table.render(table_height)
         document.text text_after_table
       end
 
@@ -97,7 +97,7 @@ module TnPDF
     end
 
     def table
-      @table ||= Table.new
+      @table ||= Table.new(document)
     end
 
     # Configurable properties
