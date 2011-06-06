@@ -52,6 +52,7 @@ module TnPDF
       document.bounding_box([x_pos, document.cursor],
                             :width => prawn_table.width,
                             :height => max_height) do
+        document.font_size self.font_size
         document.table([[header_table], *minitables]+[footer_tables]) do |table|
           stylize_table(table)
         end

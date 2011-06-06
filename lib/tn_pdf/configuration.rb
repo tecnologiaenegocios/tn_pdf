@@ -94,6 +94,7 @@ module TnPDF
         @table ||= {
           :align => :center,
           :multipage_headers => true,
+          :font_size => 10,
           :header_font_style => :bold,
           :header_font_size => 10,
           :header_font => 'Courier',
