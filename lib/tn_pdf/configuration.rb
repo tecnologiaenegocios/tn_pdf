@@ -97,10 +97,14 @@ module TnPDF
           :header_font_style => :bold,
           :header_font_size => 10,
           :header_font => 'Courier',
-          :borders => false,
           :header_color => "FF0000",
+          :footer_font_style => :bold,
+          :footer_font_size => 10,
+          :footer_font => 'Courier',
+          :footer_color => "FF0000",
           :odd_row_color => "00FF00",
           :even_row_color => "0000FF",
+          :borders => false,
         }
       end
 

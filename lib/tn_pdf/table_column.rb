@@ -9,7 +9,7 @@ module TnPDF
         raise ArgumentError unless valid_column_args?(arguments)
         @header = arguments[0].to_s
         @proc   = arguments[1].to_proc
-        @style = style_for(arguments[2])
+        @style = Column.style_for(arguments[2])
       end
 
       def values_for(collection)
@@ -38,6 +38,10 @@ module TnPDF
         return value.to_s
       end
 
+      def prawn_style
+        style.reject { |k, v| [:format, :decimal].include? k }
+      end
+
       private
 
       def valid_column_args?(column_args)
@@ -52,7 +56,7 @@ module TnPDF
         return validity
       end
 
-      def style_for(type)
+      def self.style_for(type)
         if type.nil?
           {:format => "%s"}
         elsif type.kind_of? Symbol
@@ -60,6 +64,10 @@ module TnPDF
         else
           type
         end
+      end
+
+      def self.prawn_style_for(type)
+        style_for(type).reject { |k, v| [:format, :decimal].include? k }
       end
     end
 
