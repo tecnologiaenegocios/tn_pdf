@@ -126,7 +126,10 @@ module TnPDF
                            :decimal => "," },
 
           :text => { :format => "%s",
-                     :align => :left }
+                     :align => :left },
+
+          :right_text => { :format => "%s",
+                     :align => :right },
         }
       end
 
