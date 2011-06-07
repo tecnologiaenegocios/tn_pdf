@@ -2,14 +2,15 @@ module TnPDF
   class Table
 
     class Column
-      attr_reader :header, :proc, :collection, :style
+      attr_reader :header, :proc, :collection, :style, :width
 
       alias_method :to_proc, :proc
       def initialize(arguments)
         raise ArgumentError unless valid_column_args?(arguments)
         @header = arguments[0].to_s
         @proc   = arguments[1].to_proc
-        @style = Column.style_for(arguments[2])
+        @style  = Column.style_for(arguments[2])
+        @width  = arguments[3].to_i rescue 0
       end
 
       def values_for(collection)
@@ -47,7 +48,7 @@ module TnPDF
       def valid_column_args?(column_args)
         validity  = true
         validity &= column_args.kind_of? Array
-        validity &= column_args.count == 2 || column_args.count == 3
+        validity &= [2, 3, 4].include? column_args.count
         validity &= column_args[0].respond_to?(:to_s)
         validity &= column_args[1].respond_to?(:to_proc)
       rescue NoMethodError

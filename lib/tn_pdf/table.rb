@@ -48,9 +48,9 @@ module TnPDF
     end
 
     def render(max_height)
-      x_pos = x_pos_on(document, prawn_table.width)
+      x_pos = x_pos_on(document, prawn_table_width)
       document.bounding_box([x_pos, document.cursor],
-                            :width => prawn_table.width,
+                            :width => prawn_table_width,
                             :height => max_height) do
         document.font_size self.font_size
         document.table([[header_table], *minitables]+[footer_tables]) do |table|
@@ -122,14 +122,19 @@ module TnPDF
       end
 
       @prawn_table ||= document.make_table([@prev_headers]+@prev_rows,
-                          :width => document.bounds.width) do |table|
+                          :width => document.bounds.width.floor.to_f) do |table|
+        columns.each_with_index do |column, index|
+          next if column.width.nil? or column.width == 0
+          table.column(index).width = column.width
+        end
+
         stylize_table(table)
       end
     end
 
     def minitables
       rows.map do |row|
-        minitable = document.make_table([row], :width => prawn_table.width) do |table|
+        minitable = document.make_table([row], :width => prawn_table_width) do |table|
           table.column_widths = prawn_table.column_widths
           columns.each_with_index do |column, index|
             table.columns(index).style(column.prawn_style)
@@ -141,7 +146,7 @@ module TnPDF
     end
 
     def header_table
-      document.make_table([columns_headers], :width => prawn_table.width) do |table|
+      document.make_table([columns_headers], :width => prawn_table_width) do |table|
         table.column_widths = prawn_table.column_widths
         header_row = table.row(0)
         header_row.background_color = self.header_color
@@ -172,10 +177,12 @@ module TnPDF
 
     def footer_table_for(row)
       row_array = [row.map(&:content)]
-      document.make_table(row_array, :width => prawn_table.width) do |table|
+      document.make_table(row_array, :width => prawn_table_width) do |table|
         table.column_widths = row.map do |field|
           prawn_table.column_widths[field.colspan_range].inject(:+)
         end
+
+        table.column_widths # Prawn bug...
 
         footer_row = table.row(0)
         footer_row.background_color = self.footer_color
@@ -189,6 +196,11 @@ module TnPDF
         stylize_table(table)
       end
     end
+
+    def prawn_table_width
+      prawn_table.cells.width
+    end
+
   end
 
 end
