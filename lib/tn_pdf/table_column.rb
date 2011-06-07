@@ -21,22 +21,7 @@ module TnPDF
 
       def value_for(object)
         value = @proc.call(object)
-        method = if value.respond_to?(:strftime)
-                   value.method(:strftime)
-                 elsif value.respond_to?(:sprintf)
-                   value.method(:sprintf)
-                 else
-                   method(:sprintf)
-                 end
-        string = method.arity == 1 ?
-                   method.call(style[:format]) :
-                   method.call(style[:format], value)
-
-        string.gsub!(".", style[:decimal]) if style[:decimal]
-        return string
-      rescue TypeError
-        puts "WARNING: Bad format '#{style[:format]}' for value '#{value}'"
-        return value.to_s
+        Column.format_value(value, style)
       end
 
       def prawn_style
@@ -69,6 +54,25 @@ module TnPDF
 
       def self.prawn_style_for(type)
         style_for(type).reject { |k, v| [:format, :decimal].include? k }
+      end
+
+      def self.format_value(value, style)
+        method = if value.respond_to?(:strftime)
+                   value.method(:strftime)
+                 elsif value.respond_to?(:sprintf)
+                   value.method(:sprintf)
+                 else
+                   method(:sprintf)
+                 end
+        string = method.arity == 1 ?
+                   method.call(style[:format]) :
+                   method.call(style[:format], value)
+
+        string.gsub!(".", style[:decimal]) if style[:decimal]
+        return string
+      rescue TypeError
+        puts "WARNING: Bad format '#{style[:format]}' for value '#{value}'"
+        return value.to_s
       end
     end
 

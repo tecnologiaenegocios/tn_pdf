@@ -72,9 +72,13 @@ module TnPDF
 
       row = row.map do |field|
         field[2] ||= :text
-        OpenStruct.new(:content => field[0],
+        content = Column.format_value(field[0],
+                                      Column.style_for(field[2]))
+
+        OpenStruct.new(:content => content,
                        :colspan => field[1],
                        :style   => Column.prawn_style_for(field[2]) )
+
       end
 
       row.inject(0) do |first_column, field|
