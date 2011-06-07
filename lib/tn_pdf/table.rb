@@ -113,8 +113,16 @@ module TnPDF
     end
 
     def prawn_table
-      @prawn_table ||= document.make_table([columns_headers]+rows,
-                          :width => document.bounds.width.round) do |table|
+      if @prev_headers != columns_headers or
+         @prev_rows != rows
+
+        @prawn_table = nil
+        @prev_headers = columns_headers
+        @prev_rows    = rows
+      end
+
+      @prawn_table ||= document.make_table([@prev_headers]+@prev_rows,
+                          :width => document.bounds.width) do |table|
         stylize_table(table)
       end
     end
