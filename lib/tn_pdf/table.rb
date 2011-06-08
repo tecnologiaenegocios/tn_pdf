@@ -53,7 +53,12 @@ module TnPDF
                             :width => document_width,
                             :height => max_height) do
         document.font_size self.font_size
-        document.table([[header_table], *minitables]+[footer_tables],
+
+        table_data  = [[header_table]]
+        table_data += minitables
+        table_data += footer_tables
+
+        document.table(table_data,
                       :column_widths => sane_column_widths) do |table|
           table.header = self.multipage_headers
           stylize_table(table)
@@ -182,7 +187,7 @@ module TnPDF
 
     def footer_tables
       footer_rows.map do |row|
-        footer_table_for(row)
+        [footer_table_for(row)]
       end
     end
 
