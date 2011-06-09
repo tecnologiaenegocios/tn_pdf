@@ -93,6 +93,8 @@ module TnPDF
       def table
         @table ||= {
           :align => :center,
+          :text_before => "",
+          :text_after  => "",
           :multipage_headers => true,
           :font_size => 10,
           :header_font_style => :bold,

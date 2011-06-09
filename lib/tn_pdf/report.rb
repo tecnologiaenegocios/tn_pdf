@@ -74,9 +74,7 @@ module TnPDF
 
       document.bounding_box([0, document.cursor],
                             :width  => document.bounds.width) do
-        document.text text_before_table
         table.render(table_height)
-        document.text text_after_table
       end
 
       document.repeat :all do

@@ -52,6 +52,9 @@ module TnPDF
       document.bounding_box([x_pos, document.cursor],
                             :width => document_width,
                             :height => max_height) do
+
+        document.text *([text_before].flatten)
+
         document.font_size self.font_size
 
         table_data  = [[header_table]]
@@ -63,6 +66,8 @@ module TnPDF
           table.header = self.multipage_headers
           stylize_table(table)
         end
+
+        document.text *([text_after].flatten)
       end
     end
 
