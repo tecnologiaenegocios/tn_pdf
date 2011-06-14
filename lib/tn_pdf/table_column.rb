@@ -2,7 +2,8 @@ module TnPDF
   class Table
 
     class Column
-      attr_reader :header, :proc, :collection, :style, :width
+      attr_reader :header, :proc, :collection, :style
+      attr_accessor :width
 
       alias_method :to_proc, :proc
       def initialize(arguments)
@@ -10,7 +11,7 @@ module TnPDF
         @header = arguments[0].to_s
         @proc   = arguments[1].to_proc
         @style  = Column.style_for(arguments[2])
-        @width  = arguments[3].to_i rescue 0
+        @width  = arguments[3]
       end
 
       def values_for(collection)

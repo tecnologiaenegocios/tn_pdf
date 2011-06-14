@@ -144,11 +144,22 @@ module TnPDF
 
       @prawn_table ||= document.make_table([columns_headers]+rows) do |table|
         columns.each_with_index do |column, index|
-          next if column.width.nil? or column.width == 0
+          next if column.width.nil? or column.width == 0 or column.width.kind_of? String
           table.column(index).width = column.width
         end
 
         stylize_table(table)
+      end
+    end
+
+    def normalized_width(max_width, width)
+      if width.kind_of? String
+        match = width.scan(/(\d+\.?\d*)%/)
+
+        number = match[0][0].to_f/100.0
+        number*max_width
+      else
+        width
       end
     end
 
@@ -220,12 +231,26 @@ module TnPDF
 
     def sane_column_widths
       @sane_column_widths ||= begin
-        prawn_widths = prawn_table.column_widths
         extra_space  = document_width - prawn_table.width
+        widths_sum   = column_widths.inject(:+)
 
-        proportions  = prawn_widths.map { |width| width/prawn_table.width }
-        proportions.map { |proportion| proportion*(prawn_table.width + extra_space) }
+        proportions  = column_widths.map { |width| width/prawn_table.width }
+        proportions.map do |proportion|
+          proportion*(document_width)
+        end
       end
+    end
+
+    def column_widths
+      column_widths = []
+      columns.each_with_index do |column, index|
+        if column.width.nil? or column.width == 0
+          column.width = prawn_table.columns(index).width
+        end
+        column_widths << normalized_width(prawn_table.width, column.width)
+      end
+      prawn_table.width = column_widths.inject(:+)
+      column_widths
     end
 
     def document_width
