@@ -49,6 +49,28 @@ module TnPDF
         end
       end
 
+      def perform_conversions(value)
+        match = value.match(/^(\d+\.?\d*)(cm|mm)$/) rescue nil
+        if match
+          num = match[1].to_f
+          conversion = match[2].to_sym
+          num.send(conversion)
+        elsif value.kind_of? Hash
+          value.to_options!
+          value.inject({}) do |hash, (key, value)|
+            hash[key] = perform_conversions(value)
+            hash
+          end
+        elsif value.kind_of? Array
+          value.inject([]) do |array, value|
+            array << perform_conversions(value)
+            array
+          end
+        else
+          value
+        end
+      end
+
       private
 
       def report
@@ -133,28 +155,6 @@ module TnPDF
           :right_text => { :format => "%s",
                      :align => :right },
         }
-      end
-
-      def perform_conversions(value)
-        match = value.match(/^(\d+\.?\d*)(cm|mm)$/) rescue nil
-        if match
-          num = match[1].to_f
-          conversion = match[2].to_sym
-          num.send(conversion)
-        elsif value.kind_of? Hash
-          value.to_options!
-          value.inject({}) do |hash, (key, value)|
-            hash[key] = perform_conversions(value)
-            hash
-          end
-        elsif value.kind_of? Array
-          value.inject([]) do |array, value|
-            array << perform_conversions(value)
-            array
-          end
-        else
-          value
-        end
       end
 
       def filter_property(property)

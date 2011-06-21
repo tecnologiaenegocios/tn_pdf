@@ -4,12 +4,13 @@ module TnPDF
     class Box
       attr_reader :image_file, :image_options
       attr_reader :text, :text_options
+      attr_accessor :width
 
       def initialize(options)
         parse_options(options)
       end
 
-      def render(document, pos, width, height=nil)
+      def render(document, pos, height=nil)
         options_hash = { :width => width }
         options_hash[:height] = height unless height.nil?
 
@@ -41,8 +42,9 @@ module TnPDF
       private
 
       def parse_options(options)
-        options.to_options!
+        options = Configuration.perform_conversions(options)
 
+        self.width = options[:width]
         options[:align]  ||= :justify
         options[:valign] ||= :center
 

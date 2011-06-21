@@ -28,7 +28,7 @@ module TnPDF
     end
 
     def boxes
-      [left_box, center_box, right_box].compact
+      [left_box, center_box, right_box]
     end
 
     def top
@@ -42,13 +42,21 @@ module TnPDF
     def render(document, position)
       width ||= document.bounds.width
 
-      box_width = width/(boxes.count)
+      box_width = width/(boxes.compact.count)
 
-      boxes.inject(0) do |offset, box|
-        x_pos = position[0] + offset
-        y_pos = position[1] - top
-        box.render(document, [x_pos, y_pos], box_width, height )
-        offset += box_width
+      boxes.each do |box|
+        puts box.width
+        box.width ||= box_width
+      end
+
+      boxes_with_positions = [
+        boxes,
+        [position[0], (width-boxes[1].width)/2, width-boxes[2].width],
+        [position[1]-top]*3
+      ].transpose
+
+      boxes_with_positions.each do |box, x_pos, y_pos|
+        box.render(document, [x_pos, y_pos], height )
       end
     end
 
