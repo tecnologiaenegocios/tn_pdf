@@ -2,11 +2,10 @@ require 'rake'
 require 'bundler'
 Bundler::GemHelper.install_tasks
 
-require 'spec/rake/spectask'
+require 'rspec/core/rake_task'
 
 desc "Run all examples with RCov"
-Spec::Rake::SpecTask.new('examples_with_rcov') do |t|
-  t.spec_files = FileList['spec/**/*_spec.rb']
+RSpec::Core::RakeTask.new('examples_with_rcov') do |t|
   t.rcov = true
-  t.rcov_opts = ['--exclude', 'spec,.bundle']
+  # t.rcov_opts = ['--exclude', 'spec,.bundle']
 end

@@ -14,11 +14,9 @@ Gem::Specification.new do |s|
 
   s.add_dependency('prawn', '~> 0.11.1')
   s.add_dependency('activesupport', '~> 2.3.5')
+  s.add_dependency('backports')
 
   s.add_development_dependency('rspec', '~> 2.6.0')
-  s.add_development_dependency('autotest')
-  s.add_development_dependency('rcov')
-  s.add_development_dependency('pry')
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
