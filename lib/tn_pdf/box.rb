@@ -23,7 +23,8 @@ module TnPDF
 
           if has_text?
             text_args = [text]
-            text_args << text_options unless text_options.empty?
+            text_options.merge!({:inline_format => true})
+            text_args << text_options
             document.font(text_options[:font], text_options[:font_options]) do
               document.text *text_args
             end
