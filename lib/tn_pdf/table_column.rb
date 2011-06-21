@@ -29,6 +29,21 @@ module TnPDF
         style.reject { |k, v| [:format, :decimal].include? k }
       end
 
+      def normalized_width(max_width=nil)
+        if width.kind_of? String
+          if max_width
+            match = width.scan(/(\d+\.?\d*)%/)
+
+            number = match[0][0].to_f/100.0
+            number*max_width
+          else
+            nil
+          end
+        else
+          width
+        end
+      end
+
       private
 
       def valid_column_args?(column_args)

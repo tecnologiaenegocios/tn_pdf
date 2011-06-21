@@ -143,23 +143,7 @@ module TnPDF
       end
 
       @prawn_table ||= document.make_table([columns_headers]+rows) do |table|
-        columns.each_with_index do |column, index|
-          next if column.width.nil? or column.width == 0 or column.width.kind_of? String
-          table.column(index).width = column.width
-        end
-
         stylize_table(table)
-      end
-    end
-
-    def normalized_width(max_width, width)
-      if width.kind_of? String
-        match = width.scan(/(\d+\.?\d*)%/)
-
-        number = match[0][0].to_f/100.0
-        number*max_width
-      else
-        width
       end
     end
 
@@ -210,11 +194,11 @@ module TnPDF
     def footer_table_for(row)
       row_array     = [row.map(&:content)]
       column_widths = row.map do |field|
-        sane_column_widths[field.colspan_range].inject(:+)
+        column_widths[field.colspan_range].inject(:+)
       end
 
       document.make_table(row_array,
-                          :column_widths => column_widths) do |table|
+                          :column_widths => sane_column_widths) do |table|
 
         footer_row = table.row(0)
         footer_row.background_color = self.footer_color
@@ -230,27 +214,34 @@ module TnPDF
     end
 
     def sane_column_widths
-      @sane_column_widths ||= begin
-        extra_space  = document_width - prawn_table.width
-        widths_sum   = column_widths.inject(:+)
+      fixed_widths = column_widths(:fixed)
+      generated_widths = column_widths(:generated)
+      percentage_widths = column_widths(:percentage)
 
-        proportions  = column_widths.map { |width| width/prawn_table.width }
-        proportions.map do |proportion|
-          proportion*(document_width)
-        end
+      remaining_space = document_width - percentage_widths.sum - fixed_widths.sum
+
+      normalized_widths = generated_widths.map do |width|
+        (width/generated_widths.sum)*remaining_space
       end
+      fixed_widths + percentage_widths + normalized_widths
     end
 
-    def column_widths
-      column_widths = []
-      columns.each_with_index do |column, index|
-        if column.width.nil? or column.width == 0
-          column.width = prawn_table.columns(index).width
+    def column_widths(type = :all)
+      case type
+      when :fixed
+        columns.select { |c| c.width.kind_of?(Numeric) }.map(&:width)
+      when :generated
+        columns.select { |c| c.width.nil? }.map do |column|
+          index  = columns.index(column)
+          prawn_table.columns(index).width
         end
-        column_widths << normalized_width(prawn_table.width, column.width)
+      when :percentage
+        columns.select { |c| c.width.kind_of?(String) }.map do |column|
+          column.normalized_width(document_width)
+        end
+      else # :all falls here
+        column_widths(:fixed) + column_widths(:percentage) + column_widths(:generated)
       end
-      prawn_table.width = column_widths.inject(:+)
-      column_widths
     end
 
     def document_width
