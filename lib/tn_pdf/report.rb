@@ -1,6 +1,111 @@
 module TnPDF
+  # @author Renato Zannon
+  # The {TnPDF::Report} class is the easier, best supported and more complete
+  # way to access the TnPDF API. It delegates most of it's work to fellow classes
+  # such as {TnPDF::Table} and {TnPDF::PageSection}, but the delegation
+  # itself and all the necessary setup is made under the hood.
+  # This means that everything the code needs to do is access methods such as
+  # {#record_collection} and {#table_columns}, and then it is forwarded to the
+  # appropriate member.
+  #
+  # For more specific needs, methods such as {#table} and {#page_header}, which
+  # give direct access to the report's members, are provided, so that the user can
+  # make low-level/bleeding edge adjustments without being restricted to this
+  # classe's interface.
+  #
+  # @attr [String] page_size
+  #   The report's page size, in paper sizes such as "A4" and "Letter".
+  #   Supports as much as much paper sizes as Prawn does.
+  #
+  # @attr [Symbol] page_layout
+  #   The resulting pages' layout. Must be :landscape or :portrait
+  #
+  # @attr [Double] left_margin
+  #   Sets the document's left margin. Accepts a Double value, defined in PDF
+  #   points (1/72 inch) or a String "in" cm or mm, such as "1.5cm" and
+  #   "50mm".
+  #
+  # @attr [Double] right_margin
+  #   Sets the document's right margin. Accepts a Double value, defined in PDF
+  #   points (1/72 inch) or a String "in" cm or mm, such as "1.5cm" and
+  #   "50mm".
+  #
+  # @attr [Double] bottom_margin
+  #   Sets the document's bottom margin. Accepts a Double value, defined in PDF
+  #   points (1/72 inch) or a String "in" cm or mm, such as "1.5cm" and
+  #   "50mm".
+  #
+  # @attr [Double] top_margin
+  #   Sets the document's top margin. Accepts a Double value, defined in PDF
+  #   points (1/72 inch) or a String "in" cm or mm, such as "1.5cm" and
+  #   "50mm".
+  #
+  # @attr [String] font
+  #   The default font to be used on the report. The only (currently) supported
+  #   choices are "Helvetica" and "Courier", although Prawn's font embedding
+  #   mechanism is a probable upcoming addition
+  #
+  # @attr [Fixnum] font_size
+  #   The default report font size. In the usual "points" unit.
+  #
+  # @attr [String] images_path
+  #   The path from where we will search for the requested images. Defaults to
+  #   the current path, "./". In a Rails application, for instance, you would
+  #   probably want to set this guy to RAILS_ROOT+"public/images"
+  #
+  # @attr [String, Array<String, Hash>] text_before_table
+  #   Some text to be rendered before the report's table. Can be used as some
+  #   kind of prelude/explanation/introduction etc.
+  #   It accepts a normal string, that will be rendered using the settings on
+  #   {#font} and {#font_size}, or an Array containing a String and a Hash,
+  #   the last being an hash of options, as accepted by Prawn's Document#text
+  #   method.
+  #   @example
+  #     report.text_before_table = "Some text"
+  #   @example
+  #     report.text_before_table = ["Some text", :size => 20]
+  #
+  # @attr [String, Array<String, Hash>] text_after_table
+  #   Some text to be rendered after the report's table. Can be used as a
+  #   confirmation, a conclusion, an acceptance term etc.
+  #   It accepts a normal string, that will be rendered using the settings on
+  #   {#font} and {#font_size}, or an Array containing a String and a Hash,
+  #   the last being an hash of options, as accepted by Prawn's Document#text
+  #   method.
+  #   @example
+  #     report.text_after_table = "Some text"
+  #   @example
+  #     report.text_after_table = ["Some text", :size => 20]
   class Report
-    attr_reader :page_header, :page_footer, :table, :record_collection
+
+    # The underlying {PageSection} that represents the report pages' headers. Direct
+    # manipulation is disencouraged.
+    # @return [PageSection]
+    attr_reader :page_header
+
+    # The underlying {PageSection} that represents the report pages' footers. Direct
+    # manipulation is disencouraged.
+    # @return [PageSection]
+    attr_reader :page_footer
+
+    # The underlying {Table}. Direct manipulation is disencouraged, except in
+    # cases where fine adjustments are required, or when some (possibly
+    # bleeding-edge) functionality is not implemented on {Report} (yet).
+    #
+    # An example of this case is {Table#add_footer}, which can't (currently)
+    # be accessed by any way except by doing:
+    #   report.table.add_footer
+    # @return [Table]
+    attr_reader :table
+
+    # The underlying {Table}'s collection of objects. Each of these objects
+    # will be represented as a table row, by the application of the procedures
+    # described using {#table_columns=}. The order in which this property and
+    # {#table_columns} are called really an issue, as soon as *both* are set
+    # before {#render} is called.
+    # @return [Array]
+    attr_accessor :record_collection
+
     attr_accessor *Configuration.report_properties_names
 
     def initialize(properties = {})

@@ -7,3 +7,5 @@ coverage
 *.gem
 Gemfile.lock
 pkg/*
+doc/
+.yardoc
