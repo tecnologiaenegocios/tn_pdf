@@ -91,10 +91,6 @@ module TnPDF
     # The underlying {Table}. Direct manipulation is disencouraged, except in
     # cases where fine adjustments are required, or when some (possibly
     # bleeding-edge) functionality is not implemented on {Report} (yet).
-    #
-    # An example of this case is {Table#add_footer}, which can't (currently)
-    # be accessed by any way except by doing:
-    #   report.table.add_footer
     # @return [Table]
     attr_reader :table
 
@@ -174,6 +170,13 @@ module TnPDF
       columns.each do |column|
         table.add_column column
       end
+    end
+
+    # Forwards the arguments to the underlying {Table}. Refer to
+    # {Table#add_footer Table#add_footer} for a full description of the
+    # required syntax
+    def add_table_footer(row=nil, &block)
+      table.add_footer(row, &block)
     end
 
     # Renders the report on filename. This method also calls render on the
