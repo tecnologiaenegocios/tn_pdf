@@ -1,6 +1,37 @@
 require 'tn_pdf/table_column'
 
 module TnPDF
+  # A representation {Report}'s table. It's an abstraction above a Prawn
+  # table that that 'defaultizes' a commonly used structure - a table that is a
+  # {#collection} of elements displayed as {#rows}, on which each of the {#columns}
+  # is a property of an object.
+  #
+  # Through {Table::Column}, it also provides many configurable
+  # column 'types', such as currency and float, to ease the pain of formatting
+  # the table on a consistent manner.
+  #
+  # Above that, it also provides a very useful feature that Prawn misses:
+  # column spanning (although currently only on footers).
+  #
+  # == Table footers
+  #
+  # Table footers are special rows that are often used to make a summary of
+  # the table data.
+  #
+  # The main differences between a footer row and a ordinary row are:
+  # [Column spanning]
+  #   Normal row's cells can't span across multiple columns,
+  #   while a footer cell can.
+  # [Calculation]
+  #   In a normal row, the cells' values are automatically
+  #   calculated using the provided method, while in a footer
+  #   row the displayed value should be directly passed.
+  # [Scope]
+  #   A footer row acts in the scope of the whole collection, while
+  #   a normal row represents a single object.
+  # [Format]
+  #   Footer rows can be formatted in a differente manner, through
+  #   the use of the +table_footer_*+ properties on {Configuration}
   class Table
     attr_accessor *Configuration.table_properties_names
 
@@ -11,18 +42,10 @@ module TnPDF
       @document = document
     end
 
-    def columns_hash
-      columns_hash = ActiveSupport::OrderedHash.new
-      columns.inject(columns_hash) do |hash, column|
-        hash[column.header] = column.to_proc
-        hash
-      end
-    end
-
-    def columns_headers
-      columns.map(&:header)
-    end
-
+    # The collection of objects to be represented by the table.
+    # @return [Array]
+    # @raise [ArgumentError] If the passed value isn't an Array
+    attr_accessor :collection
     def collection
       @collection ||= Array.new
     end
@@ -32,6 +55,17 @@ module TnPDF
       @collection = collection
     end
 
+    # The columns already set on this table. Despite of being first provided
+    # as Arrays, the members of this collection are instances of {Column}.
+    # @return [Array]
+    attr_reader :columns
+    def columns
+      @columns ||= []
+    end
+
+    # Adds a column to the table. The argument should be a {Column}, or an
+    # argument that {Column#initialize} accepts.
+    # @param [Column] (see Column#initialize)
     def add_column(column)
       unless column.kind_of? Column
         column = Column.new(column)
@@ -53,10 +87,9 @@ module TnPDF
       @columns = []
     end
 
-    def columns
-      @columns ||= []
-    end
-
+    # The already computed rows of the table. Needs {#columns} and
+    # {#collection} to be already set to return something meaningful.
+    # @return [Array] An array containing the rows to be rendered.
     def rows
       collection.map do |object|
         columns.map do |column|
@@ -89,7 +122,38 @@ module TnPDF
       end
     end
 
-
+    # Adds a footer row to the table.
+    #
+    # The argument to this method should be an Array (or a block that returns
+    # an Array) in which each member is a cell in the format:
+    #   [content, colspan, style]
+    # where:
+    # [*content*]
+    #   Is the content of the cell. May be a label, a sum of some values
+    #   from the collection etc.
+    # [*colspan*]
+    #   A number representing how many columns of the table this cell is going
+    #   to span across. Be warned that the sum of all the colspans on a given
+    #   footer row should always match the number of columns in the table, or
+    #   an exception will be raised.
+    # [*style*]
+    #   The formatting style of the cell. Refer to {Column#style Column#style}
+    #   for details.
+    # @example
+    #   # On a table that has 2 columns
+    #   table.add_footer [
+    #     ["Total", 1, :text],
+    #     [12345,   1, :number]
+    #   ]
+    # @example
+    #   # On a table that has 3 columns
+    #   table.add_footer do |collection|
+    #     calculation = collection.map(&:value).sum
+    #     [
+    #       ["Calculation", 1, :text],
+    #       [calculation,   2, :number]
+    #     ]
+    #   end
     def add_footer(row=nil, &block)
       unless block_given? or row.kind_of? Array
         raise ArgumentError, "No block or array was passed"
@@ -97,6 +161,7 @@ module TnPDF
 
       row = block.call(collection) if block_given?
 
+      # [content, colspan, style]
       row = row.map do |field|
         field[2] ||= :text
         content = Column.format_value(field[0],
@@ -105,7 +170,6 @@ module TnPDF
         OpenStruct.new(:content => content,
                        :colspan => field[1],
                        :style   => Column.prawn_style_for(field[2]) )
-
       end
 
       row.inject(0) do |first_column, field|
@@ -124,12 +188,17 @@ module TnPDF
       footer_rows << row
     end
 
+    private
+
+    def columns_headers
+      columns.map(&:header)
+    end
+
     def row_color(row_number)
       row_number % 2 == 0 ?
         self.even_row_color:
         self.odd_row_color
     end
-    private
 
     def x_pos_on(document, table_width)
       case align
