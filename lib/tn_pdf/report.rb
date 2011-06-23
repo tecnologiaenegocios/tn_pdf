@@ -53,7 +53,7 @@ module TnPDF
   #   the current path, "./". In a Rails application, for instance, you would
   #   probably want to set this guy to RAILS_ROOT+"public/images"
   #
-  # @attr [String, Array<String, Hash>] text_before_table
+  # @attr [String, Array] text_before_table
   #   Some text to be rendered before the report's table. Can be used as some
   #   kind of prelude/explanation/introduction etc.
   #   It accepts a normal string, that will be rendered using the settings on
@@ -65,7 +65,7 @@ module TnPDF
   #   @example
   #     report.text_before_table = ["Some text", :size => 20]
   #
-  # @attr [String, Array<String, Hash>] text_after_table
+  # @attr [String, Array] text_after_table
   #   Some text to be rendered after the report's table. Can be used as a
   #   confirmation, a conclusion, an acceptance term etc.
   #   It accepts a normal string, that will be rendered using the settings on
@@ -98,13 +98,24 @@ module TnPDF
     # @return [Table]
     attr_reader :table
 
+    def table
+      @table ||= Table.new(document)
+    end
+
     # The underlying {Table}'s collection of objects. Each of these objects
     # will be represented as a table row, by the application of the procedures
     # described using {#table_columns=}. The order in which this property and
-    # {#table_columns} are called really an issue, as soon as *both* are set
+    # {#table_columns} are called isn't an issue, as soon as *both* are set
     # before {#render} is called.
     # @return [Array]
     attr_accessor :record_collection
+
+    def record_collection=(collection)
+      unless collection.kind_of? Array
+        raise ArgumentError, "collection should be an Array!"
+      end
+      @record_collection = table.collection = collection
+    end
 
     attr_accessor *Configuration.report_properties_names
 
@@ -144,24 +155,33 @@ module TnPDF
       forward_property("table", property)
     end
 
-    def record_collection=(collection)
-      unless collection.kind_of? Array
-        raise ArgumentError, "collection should be an Array!"
-      end
-      @record_collection = table.collection = collection
-    end
-
+    # The underlying {Table}'s collection of columns. Refer to
+    # {Table#add_column} for reference on the Array's structure.
+    # @return [Array]
     def table_columns
       table.columns || Array.new
     end
 
+    # Forwards the received arguments to {Table}. Refer to {Table#add_column}
+    # for a reference on the valid structure.
+    # Be advised that calling this method *resets* the columns set previously,
+    # insted of just adding new ones.
+    # @param [Array] columns An Array of elements as accepted by {Table#add_column}
+    # @raise [ArgumentError] When the argument isn't an Array
     def table_columns=(columns)
       raise ArgumentError unless columns.kind_of? Array
+      table.reset_columns
       columns.each do |column|
         table.add_column column
       end
     end
 
+    # Renders the report on filename. This method also calls render on the
+    # report's members - {#table}, {#page_header} and {#page_footer} - which means
+    # that, on a straightforward report, the process is reduced to set up {#table_columns}
+    # and {#record_collection}, and then calling {#render}. This alone already does all the
+    # trick to generate the PDF.
+    # @param [String, IO] filename The file on which the report will render
     def render(filename)
       document_width = document.bounds.width
       page_header_position = [0, document.cursor]
@@ -189,21 +209,15 @@ module TnPDF
       document.render_file filename
     end
 
-    def page_body_height
-      height  = document.bounds.height
-      height -= page_header.total_height
-      height -= page_footer.total_height
-    end
-
+    # The underlying {Prawn::Document}. Direct manipulation is highly
+    # disencouraged, except for querying information.
+    # @return [Prawn::Document]
+    attr_reader :document
     def document
       @document ||= Prawn::Document.new(properties)
     end
 
-    def table
-      @table ||= Table.new(document)
-    end
-
-    # Configurable properties
+    private
 
     def properties
       Configuration.report_properties_names.inject({}) do |properties_hash, property|
@@ -212,7 +226,11 @@ module TnPDF
       end
     end
 
-    private
+    def page_body_height
+      height  = document.bounds.height
+      height -= page_header.total_height
+      height -= page_footer.total_height
+    end
 
     def initialize_properties(properties)
       owned_properties  = Configuration.report_properties_names
