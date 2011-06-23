@@ -100,24 +100,26 @@ module TnPDF
 
     def render(max_height)
       x_pos = x_pos_on(document, document_width)
+
+      table_data  = [[header_table]]
+      table_data += minitables
+      table_data += footer_tables
+
+      options = ActiveSupport::OrderedHash.new
+      options[:width]         = sane_column_widths.sum
+      options[:column_widths] = sane_column_widths
+      table = document.make_table(table_data, options)
+      table.header = self.multipage_headers
+
+      stylize_table(table)
       document.bounding_box([x_pos, document.cursor],
                             :width => document_width,
                             :height => max_height) do
 
         document.text *([text_before].flatten)
-
         document.font_size self.font_size
 
-        table_data  = [[header_table]]
-        table_data += minitables
-        table_data += footer_tables
-
-        document.table(table_data,
-                      :column_widths => sane_column_widths) do |table|
-          table.header = self.multipage_headers
-          stylize_table(table)
-        end
-
+        table.draw
         document.text *([text_after].flatten)
       end
     end
@@ -188,16 +190,16 @@ module TnPDF
       footer_rows << row
     end
 
-    private
-
-    def columns_headers
-      columns.map(&:header)
-    end
-
     def row_color(row_number)
       row_number % 2 == 0 ?
         self.even_row_color:
         self.odd_row_color
+    end
+
+    private
+
+    def columns_headers
+      columns.map(&:header)
     end
 
     def x_pos_on(document, table_width)
@@ -278,11 +280,11 @@ module TnPDF
     def footer_table_for(row)
       row_array     = [row.map(&:content)]
       column_widths = row.map do |field|
-        column_widths[field.colspan_range].inject(:+)
+        sane_column_widths[field.colspan_range].inject(:+)
       end
 
       document.make_table(row_array,
-                          :column_widths => sane_column_widths) do |table|
+                          :column_widths => column_widths) do |table|
 
         footer_row = table.row(0)
         footer_row.background_color = self.footer_color

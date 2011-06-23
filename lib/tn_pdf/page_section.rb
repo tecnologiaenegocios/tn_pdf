@@ -45,7 +45,6 @@ module TnPDF
       box_width = width/(boxes.compact.count)
 
       boxes.each do |box|
-        puts box.width
         box.width ||= box_width
       end
 
