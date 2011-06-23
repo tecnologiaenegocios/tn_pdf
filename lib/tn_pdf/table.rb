@@ -39,6 +39,24 @@ module TnPDF
       columns << column
     end
 
+    def remove_column(column)
+      if column.kind_of? Column
+        columns.delete(column)
+      elsif column.kind_of? Fixnum
+        columns.delete_at(column)
+      else
+        raise ArgumentError, "Unrecognized argument '#{column.inspect}'"
+      end
+    end
+
+    def reset_columns
+      @columns = []
+    end
+
+    def columns
+      @columns ||= []
+    end
+
     def rows
       collection.map do |object|
         columns.map do |column|
@@ -71,9 +89,6 @@ module TnPDF
       end
     end
 
-    def columns
-      @columns ||= []
-    end
 
     def add_footer(row=nil, &block)
       unless block_given? or row.kind_of? Array
