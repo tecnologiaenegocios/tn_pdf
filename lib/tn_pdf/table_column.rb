@@ -54,6 +54,7 @@ module TnPDF
 
       alias_method :to_proc, :proc
 
+      attr_accessor :column_width_type
       # Creates a new Column
       #
       # The parameter has to be an Array in the form:
@@ -77,7 +78,7 @@ module TnPDF
         @header = arguments[0].to_s
         @proc   = arguments[1].to_proc
         @style  = Column.style_for(arguments[2])
-        @width  = arguments[3]
+        width  = arguments[3]
       end
 
       def value_for(object)
@@ -89,21 +90,33 @@ module TnPDF
         style.reject { |k, v| [:format, :decimal].include? k }
       end
 
-      def normalized_width(max_width=nil)
-        if width.kind_of? String
-          if max_width
-            match = width.scan(/(\d+\.?\d*)%/)
-
-            number = match[0][0].to_f/100.0
-            number*max_width
-          else
-            nil
+      def width
+        if column_width_type == :percentage
+          unless max_width
+            raise ArgumentError, "Maximum width should be set for percentage-based widths!"
           end
+          match = @width.scan(/(\d+\.?\d*)%/)
+
+          number = match[0][0].to_f/100.0
+          number*max_width
         else
-          width
+          @width
         end
       end
 
+      def column_width_type
+        @column_width_type ||=
+          case @width.class
+          when String
+            (@width =~ /(\d+\.?\d*)%/) ? :percentage : :fixed
+          when Numeric
+            :fixed
+          else
+            :generated
+          end
+      end
+
+      attr_accessor :index, :max_width
       private
 
       def valid_column_args?(column_args)

@@ -59,8 +59,13 @@ module TnPDF
     # as Arrays, the members of this collection are instances of {Column}.
     # @return [Array]
     attr_reader :columns
-    def columns
+    def columns(type = :all)
       @columns ||= []
+      if type == :all
+        @columns
+      else
+        @columns.select { |c| c.column_width_type == type }
+      end
     end
 
     # Adds a column to the table. The argument should be a {Column}, or an
@@ -70,6 +75,8 @@ module TnPDF
       unless column.kind_of? Column
         column = Column.new(column)
       end
+      column.index = columns.count
+      column.max_width = document_width
       columns << column
     end
 
@@ -101,25 +108,27 @@ module TnPDF
     def render(max_height)
       x_pos = x_pos_on(document, document_width)
 
-      table_data  = [[header_table]]
-      table_data += minitables
-      table_data += footer_tables
+      initialize_generated_widths
+      total_width = self.column_widths.sum
 
-      options = ActiveSupport::OrderedHash.new
-      options[:width]         = sane_column_widths.sum
-      options[:column_widths] = sane_column_widths
-      table = document.make_table(table_data, options)
-      table.header = self.multipage_headers
-
-      stylize_table(table)
       document.bounding_box([x_pos, document.cursor],
-                            :width => document_width,
+                            :width => total_width,
                             :height => max_height) do
+
+        table_data  = [[header_table]]
+        table_data += minitables
+        table_data += footer_tables
 
         document.text *([text_before].flatten)
         document.font_size self.font_size
 
-        table.draw
+        document.table(table_data, :column_widths => [total_width],
+                                   :width => total_width) do |table|
+
+          table.header = self.multipage_headers
+          stylize_table(table)
+        end
+
         document.text *([text_after].flatten)
       end
     end
@@ -196,6 +205,11 @@ module TnPDF
         self.odd_row_color
     end
 
+    def column_widths(type = :all)
+      selected_columns = columns(type)
+      selected_columns.sort_by(&:index).map(&:width)
+    end
+
     private
 
     def columns_headers
@@ -228,8 +242,10 @@ module TnPDF
         @prev_rows    = rows
       end
 
-      @prawn_table ||= document.make_table([columns_headers]+rows) do |table|
-        stylize_table(table)
+      @prawn_table ||= begin
+        document.make_table([columns_headers]+rows) do |table|
+          stylize_table(table)
+        end
       end
     end
 
@@ -237,10 +253,11 @@ module TnPDF
       row_number = 0 # I hate this as much as you do
       rows.map do |row|
         minitable = document.make_table([row],
-                                       :column_widths => sane_column_widths) do |table|
+                                       :column_widths => column_widths) do |table|
           columns.each_with_index do |column, index|
             table.columns(index).style(column.prawn_style)
           end
+          document.font_size = self.font_size
           row_number += 1
           stylize_table(table)
           table.cells.background_color = self.row_color(row_number)
@@ -251,7 +268,7 @@ module TnPDF
 
     def header_table
       document.make_table([columns_headers],
-                          :column_widths => sane_column_widths) do |table|
+                          :column_widths => column_widths) do |table|
         header_row = table.row(0)
         header_row.background_color = self.header_color
         header_row.font_style = self.header_font_style
@@ -279,12 +296,12 @@ module TnPDF
 
     def footer_table_for(row)
       row_array     = [row.map(&:content)]
-      column_widths = row.map do |field|
-        sane_column_widths[field.colspan_range].inject(:+)
+      footer_column_widths = row.map do |field|
+        column_widths[field.colspan_range].inject(:+)
       end
 
       document.make_table(row_array,
-                          :column_widths => column_widths) do |table|
+                          :column_widths => footer_column_widths) do |table|
 
         footer_row = table.row(0)
         footer_row.background_color = self.footer_color
@@ -299,34 +316,21 @@ module TnPDF
       end
     end
 
-    def sane_column_widths
-      fixed_widths = column_widths(:fixed)
-      generated_widths = column_widths(:generated)
-      percentage_widths = column_widths(:percentage)
-
-      remaining_space = document_width - percentage_widths.sum - fixed_widths.sum
-
-      normalized_widths = generated_widths.map do |width|
-        (width/generated_widths.sum)*remaining_space
+    def initialize_generated_widths
+      columns(:generated).each do |column|
+        index = column.index
+        column.width = prawn_table.columns(index).width
       end
-      fixed_widths + percentage_widths + normalized_widths
-    end
+      generated_widths_sum = column_widths(:generated).sum
 
-    def column_widths(type = :all)
-      case type
-      when :fixed
-        columns.select { |c| c.width.kind_of?(Numeric) }.map(&:width)
-      when :generated
-        columns.select { |c| c.width.nil? }.map do |column|
-          index  = columns.index(column)
-          prawn_table.columns(index).width
-        end
-      when :percentage
-        columns.select { |c| c.width.kind_of?(String) }.map do |column|
-          column.normalized_width(document_width)
-        end
-      else # :all falls here
-        column_widths(:fixed) + column_widths(:percentage) + column_widths(:generated)
+      fixed_widths_sum = column_widths(:fixed).sum
+      percentage_widths_sum = column_widths(:percentage).sum
+      remaining_space = document_width - percentage_widths_sum - fixed_widths_sum
+
+      columns(:generated).each do |column|
+        width = column.width
+        column.width = (width/generated_widths_sum)*remaining_space
+        column.column_width_type = :fixed
       end
     end
 
