@@ -5,6 +5,8 @@ require 'prawn/measurement_extensions'
 require 'ostruct'
 require 'backports'
 
+load 'prawn/table_fix.rb'
+
 require 'tn_pdf/configuration'
 require 'tn_pdf/report'
 require 'tn_pdf/page_section'
