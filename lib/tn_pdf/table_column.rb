@@ -78,7 +78,10 @@ module TnPDF
         @header = arguments[0].to_s
         @proc   = arguments[1].to_proc
         @style  = Column.style_for(arguments[2])
-        width  = arguments[3]
+        @width  = Configuration.perform_conversions arguments[3]
+        if @width.nil?
+          column_width_type = :generated
+        end
       end
 
       def value_for(object)
@@ -106,10 +109,9 @@ module TnPDF
 
       def column_width_type
         @column_width_type ||=
-          case @width.class
-          when String
-            (@width =~ /(\d+\.?\d*)%/) ? :percentage : :fixed
-          when Numeric
+          if @width.kind_of? String
+              (@width =~ /(\d+\.?\d*)%/) ? :percentage : :fixed
+          elsif @width.kind_of? Numeric
             :fixed
           else
             :generated
