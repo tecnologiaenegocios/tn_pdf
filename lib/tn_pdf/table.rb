@@ -244,6 +244,7 @@ module TnPDF
 
       @prawn_table ||= begin
         document.make_table([columns_headers]+rows) do |table|
+          document.font_size = self.font_size
           stylize_table(table)
         end
       end
@@ -257,7 +258,7 @@ module TnPDF
           columns.each_with_index do |column, index|
             table.columns(index).style(column.prawn_style)
           end
-          document.font_size = self.font_size
+          table.rows(0..-1).font_size = self.font_size
           row_number += 1
           stylize_table(table)
           table.cells.background_color = self.row_color(row_number)
