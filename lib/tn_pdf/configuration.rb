@@ -42,7 +42,7 @@ module TnPDF
 
       def load_from(yaml_file)
         configurations = YAML.load_file(yaml_file)
-        configurations.to_options!
+
         configurations.each do |item, value|
           value = perform_conversions(value)
           self.send(item).merge! value
@@ -56,9 +56,8 @@ module TnPDF
           conversion = match[2].to_sym
           num.send(conversion)
         elsif value.kind_of? Hash
-          value.to_options!
           value.inject({}) do |hash, (key, value)|
-            hash[key] = perform_conversions(value)
+            hash[key.to_sym] = perform_conversions(value)
             hash
           end
         elsif value.kind_of? Array
