@@ -148,23 +148,28 @@ module TnPDF
       end
 
       def self.format_value(value, style)
-        method = if value.respond_to?(:strftime)
-                   value.method(:strftime)
-                 elsif value.respond_to?(:sprintf)
-                   value.method(:sprintf)
-                 else
-                   method(:sprintf)
-                 end
-        string = method.arity == 1 ?
-                   method.call(style[:format]) :
-                   method.call(style[:format], value)
+        formatting_method = formatting_method_for(value)
+        string = formatting_method.call(style[:format])
 
         string.gsub!(".", style[:decimal]) if style[:decimal]
         return string
-      rescue TypeError
-        puts "WARNING: Bad format '#{style[:format]}' for value '#{value}'"
+      rescue TypeError, ArgumentError
+        puts "WARNING: Bad format '#{style[:format]}' for value '#{value.inspect}'"
         return value.to_s
       end
+
+      def self.formatting_method_for(value)
+        if value.respond_to?(:strftime)
+          lambda { |format| value.strftime(format) }
+        elsif value.respond_to?(:sprintf)
+          lambda { |format| value.sprintf(format) }
+        elsif value.nil?
+          lambda { |_| "" }
+        else
+          lambda { |format| sprintf(format, value) }
+        end
+      end
+      private_class_method :formatting_method_for
     end
 
   end

@@ -9,3 +9,4 @@ Gemfile.lock
 pkg/*
 doc/
 .yardoc
+*.rbc
