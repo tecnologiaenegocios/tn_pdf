@@ -4,10 +4,15 @@ module TnPDF
   class Configuration
     class << self
 
-
       def [](property)
         (hash, key) = filter_property(property)
-        hash[key]
+        value = hash[key]
+
+        if value.kind_of?(Proc)
+          value.call
+        else
+          value
+        end
       end
 
       def []=(property, value)
