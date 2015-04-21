@@ -18,7 +18,7 @@ module TnPDF
           if has_image?
             image_args = [image_file]
             image_args << image_options unless image_options.empty?
-            document.image *image_args
+            document.image(*image_args)
           end
 
           if has_text?
@@ -26,7 +26,7 @@ module TnPDF
             text_options.merge!({:inline_format => true})
             text_args << text_options
             document.font(text_options[:font], text_options[:font_options]) do
-              document.text *text_args
+              document.text(*text_args)
             end
           end
         end
@@ -75,11 +75,13 @@ module TnPDF
           options[:image][:position] = options[:align]
           options[:image][:vposition] = options[:valign]
 
-          path = Configuration[:images_path]
-          @image_file = options[:image][:file]
-          unless @image_file =~ /^#{path}/
-            @image_file = File.join(path, @image_file)
+          if loader = Configuration[:image_loader, call_procs: false]
+            @image_file = loader.call(options[:image][:file])
+          else
+            path = Configuration[:images_path]
+            @image_file = File.join(path, options[:image][:file])
           end
+
           @image_options = options[:image].reject { |k,_| k == :file }
         end
       end

@@ -4,11 +4,11 @@ module TnPDF
   class Configuration
     class << self
 
-      def [](property)
+      def [](property, call_procs: true)
         (hash, key) = filter_property(property)
         value = hash[key]
 
-        if value.kind_of?(Proc)
+        if call_procs && value.kind_of?(Proc)
           value.call
         else
           value
@@ -61,13 +61,13 @@ module TnPDF
           conversion = match[2].to_sym
           num.send(conversion)
         elsif value.kind_of? Hash
-          value.inject({}) do |hash, (key, value)|
-            hash[key.to_sym] = perform_conversions(value)
+          value.inject({}) do |hash, (k, v)|
+            hash[k.to_sym] = perform_conversions(v)
             hash
           end
         elsif value.kind_of? Array
-          value.inject([]) do |array, value|
-            array << perform_conversions(value)
+          value.inject([]) do |array, v|
+            array << perform_conversions(v)
             array
           end
         else
