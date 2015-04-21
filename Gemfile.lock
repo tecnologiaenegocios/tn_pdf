@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    tn_pdf (0.0.8)
+    tn_pdf (0.0.9)
       backports
       prawn (~> 0.11.1)
 
@@ -10,7 +10,7 @@ GEM
   specs:
     Ascii85 (1.0.2)
     afm (0.2.2)
-    backports (3.6.0)
+    backports (3.6.4)
     coderay (0.9.8)
     diff-lcs (1.1.2)
     hashery (2.1.1)
