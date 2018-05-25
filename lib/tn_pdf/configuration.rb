@@ -4,6 +4,8 @@ module TnPDF
   class Configuration
     class << self
 
+      attr_accessor :image_loader
+
       def [](property, call_procs: true)
         (hash, key) = filter_property(property)
         value = hash[key]
