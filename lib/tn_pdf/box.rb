@@ -75,7 +75,7 @@ module TnPDF
           options[:image][:position] = options[:align]
           options[:image][:vposition] = options[:valign]
 
-          if loader = Configuration[:image_loader, call_procs: false]
+          if loader = Configuration.image_loader
             @image_file = loader.call(options[:image][:file])
           else
             path = Configuration[:images_path]

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    tn_pdf (0.0.9)
+    tn_pdf (0.0.10)
       backports
       prawn (~> 0.11.1)
 
